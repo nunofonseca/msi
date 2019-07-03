@@ -158,6 +158,7 @@ get.sclass <- reactive({
   ss <- get.sel.samples.r()
   as <- all.data[all.data$sample%in%ss,]
   sp.level <- aggregate(nreads ~ sample , data=as[as$pident >= as.integer(input$species.thr),], FUN="sum")
+  #sp.level <- aggregate(nreads ~ sample , data=data, FUN="sum")
   x<-cbind(sample.classified[sp.level$sample,],species.level=sp.level[,"nreads"])
   #sclass<-x
   x
@@ -337,7 +338,7 @@ Row
 
 
 
-### sun
+### Distribution
 ```{r, fig.height=4, fig.width=4, eval=TRUE}
 library(sunburstR)
 
@@ -377,7 +378,7 @@ renderSunburst({
 Row
 -----------------------------------------------------------------------
 
-### tree
+### tree view
 
 
 ```{r, fig.height=8, fig.width=5, eval=TRUE}
@@ -512,9 +513,8 @@ renderPlotly({
 
 
 
-### Reads per sample
 
-```{r, fig.height=10}
+```{r, fig.height=10,eval=FALSE}
 # species
 #colnames(data)
 ## Compute the averages according to region and the occurrence of more
@@ -541,7 +541,7 @@ renderPlot({
 Row
 -----------------------------------------------------------------------
 
-### Reads per sample2
+### Reads classified per sample
 
 ```{r, fig.height=10}
 # species
@@ -553,28 +553,26 @@ Row
 
 renderPlotly({
   ##  
-  ##colnames(sclass)
-  par(mar=c(5,10,4,4))
   sclass<-get.sclass()
+   
   ##print("aaaaaa")
-  sclass<-x
-  p <- plot_ly(sclass, x = ~SF_Zoo, y = ~y, type = 'bar', orientation = 'h', name = 'SF Zoo',
+  #sclass<-x
+  print(sclass)
+  ## sample reads classified total reads species.level
+  ## 
+  colnames(sclass)<-c("sample","reads.classified","total.reads","species.level")
+  sclass$notclass<-sclass$total.reads-sclass$reads.classified
+  p <- plot_ly(sclass, x = ~reads.classified, y = ~sample, type = 'bar', orientation = 'h', name = '# Reads classified at species level',
         marker = list(color = 'rgba(246, 78, 139, 0.6)',
                       line = list(color = 'rgba(246, 78, 139, 1.0)',
                                   width = 3))) %>%
-  add_trace(x = ~LA_Zoo, name = 'LA Zoo',
+  add_trace(x = ~notclass, name = 'Unmapped/unclassified',
             marker = list(color = 'rgba(58, 71, 80, 0.6)',
                           line = list(color = 'rgba(58, 71, 80, 1.0)',
                                       width = 3))) %>%
   layout(barmode = 'stack',
          xaxis = list(title = ""),
          yaxis = list(title =""))
-  barplot(sclass[,"total reads"],las=2,names.arg=rownames(sclass),
-       xlab = "sample", main = "Reads per sample",col="lightgrey",horiz=TRUE)
-  barplot(sclass[,"reads classified"],las=2,
-       xlab = "sample", main = "Reads per sample",col="orange",horiz=TRUE,add=TRUE)
-  barplot(sclass[,"species.level"],las=2,
-       xlab = "sample", main = "Reads per sample",col="green",horiz=TRUE,add=TRUE)
 
 })
 
