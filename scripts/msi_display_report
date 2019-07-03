@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+## looks for a results.tsv.gz file in the current folder
+def_file=results.tsv.gz
+
+if [ "$1-" !=  "-" ]; then
+    ifile=$1
+else
+    ifile=$def_file
+fi
+
+echo "Looking for $ifile"
+if [ ! -e $ifile ]; then
+    echo "ERROR: $ifile not found"
+    exit 1
+fi
+
+## R markdown file should be in the same folder as the msi_display_script
+path2script=$(dirname $BASH_SOURCE)
+
+## check if .RMD is found
+RMD_FILE="$path2script/../dashboard.Rmd"
+if [ ! -e  $RMD_FILE ]; then
+    echo "ERROR: unable to file report template $RMD_FILE"
+    exit 1
+fi
+
+## allow some options to be overridden
+if [ "$PORT-" == "-" ]; then
+  PORT=NULL
+fi
+if [ "$HOST-" == "-" ]; then
+  HOST="127.0.0.1"
+fi
+
+## run the app
+R --vanilla  <<EOF
+library(rmarkdown)
+library(flexdashboard)
+library(shiny)
+# simple invocation
+rmarkdown::run(file="$RMD_FILE",shiny_args = list("launch.browser"=TRUE, port=$PORT, host="$HOST"))
+EOF
+
