@@ -19,7 +19,7 @@ fi
 path2script=$(dirname $BASH_SOURCE)
 
 ## check if .RMD is found
-RMD_FILE="$path2script/../dashboard.Rmd"
+RMD_FILE="$path2script/../template/dashboard.Rmd"
 if [ ! -e  $RMD_FILE ]; then
     echo "ERROR: unable to file report template $RMD_FILE"
     exit 1
@@ -38,6 +38,8 @@ R --vanilla  <<EOF
 library(rmarkdown)
 library(flexdashboard)
 library(shiny)
+
+ifile<-"$ifile"
 # simple invocation
 rmarkdown::run(file="$RMD_FILE",shiny_args = list("launch.browser"=TRUE, port=$PORT, host="$HOST"))
 EOF

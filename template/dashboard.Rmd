@@ -1,0 +1,788 @@
+---
+title: "WIMS"
+author: Nuno Fonseca
+output: 
+   flexdashboard::flex_dashboard:
+    theme: cosmo
+    orientation: rows
+    vertical_layout: scroll
+    social: menu
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+#if (system.file(package='devtools') == "")
+#  install.packages('devtools')
+
+#devtools::session_info()
+
+library(flexdashboard)
+library(shiny)
+library(plotly)
+library(DT)
+library(r2d3)
+library(d3Tree)
+
+if ( is.null(ifile)  ) {
+   ifile<-"results.tsv.gz"
+}
+cat(">>>>>>",ifile,"\n")
+## load id table
+all.data<-read.table(ifile,sep="\t",quote="",fill=TRUE,header=TRUE)
+## default values
+max.num.reads<-min(sum(all.data$nreads),1000)
+
+
+threshold.species<-96
+threshold.genus<-90
+threshold.family<-82
+threshold.min.reads<-100
+min.num.reads.sample<-1000
+
+
+##
+## initial stats per sample
+sample.tot.reads <- aggregate(nreads ~ sample , data=all.data, FUN="sum")
+rownames(sample.tot.reads)<-sample.tot.reads$sample
+
+sample.classified <- aggregate(nreads ~ sample , data=all.data[all.data$species!="",],FUN="sum")
+sample.classified <- cbind(sample.classified,total=sample.tot.reads[sample.classified$sample,"nreads"])
+
+## reads classified vs total reads
+colnames(sample.classified)<-c("sample","reads classified","total reads")
+rownames(sample.classified)<-sample.classified$sample
+
+## filter the data based on the different thresholds
+## samples, species.thr, genus.thr, family.thr, min.num.reads
+filter.data <- function(samples.list, species.thr, genus.thr, family.thr, min.num.reads) {
+    if (!is.null(samples.list)) {
+      ##  filter: samples 
+      m1<-all.data[all.data$sample%in%samples.list,,drop=FALSE]
+      if (nrow(m1)==0) {return(m1)}
+    } else {
+      m1<-all.data
+    }
+      ##  
+    m1$species[m1$pident<species.thr]<-""
+    m1$genus[m1$pident<genus.thr]<-""
+    m1$family[m1$pident<family.thr]<-""
+
+    m2<-aggregate(nreads~sample+species+genus+family+order+kingdom,data=m1,FUN="sum")
+    return(m2)
+}
+
+## return the set of samples that have a number of reads greater than minv
+get.sel.samples <- function(sample.classified,minv) {
+  sel.samples<-rownames(sample.classified)[sample.classified$`total reads`>=minv]
+  sel.samples
+}
+
+csv_to_hier <- function(csv, delim = "-") {
+  df <- dplyr::bind_rows(
+    lapply(
+      strsplit(as.character(csv[[1]]), delim),
+      function(rw) data.frame(t(rw), stringsAsFactors = FALSE)
+    )
+  )
+  # handle case where no delimiter in root
+  if(any(is.na(df[,1]))) {
+    idx_notna <- which(!is.na(df[,1]))
+    df[idx_notna,2] <- df[idx_notna,1]
+    df <- df[,-1]
+  }
+  df$size = csv[[2]]
+  d3r::d3_nest(df, value_cols = "size")
+}
+
+## currently selected samples
+sel.samples<-get.sel.samples(sample.classified,min.num.reads.sample)
+
+## total number of reads
+total.num.reads<-sum(all.data[all.data$sample%in%sel.samples,"nreads"])
+sum(all.data$nreads)
+
+all.data.filt<-filter.data(NULL,threshold.species,threshold.genus,threshold.family)
+#data<-all.data.filt
+```
+
+Sidebar {.sidebar data-width=250}
+=======================================================================
+
+```{r}
+sliderInput('min.num.reads.sample', 'Min. number of reads per sample', min=1, max=max(sample.classified$`total reads`),
+            value=min.num.reads.sample, step=1, round=0)
+
+
+sliderInput('species.thr', 'Species threshold', min=91, max=100,
+            value=threshold.species, step=1, round=0)
+
+
+sliderInput('genus.thr', 'Genus threshold', min=82, max=95,
+            value=threshold.genus, step=1, round=0)
+
+sliderInput('family.thr', 'Family threshold', min=80, max=90,
+            value=threshold.family, step=1, round=0)
+
+sliderInput('min.num.reads', 'Min. number of reads per Id', min=1, max=max.num.reads,
+            value=threshold.min.reads, step=1, round=0)
+
+textInput('top.x.hits', label='Top X hits per sample threshold', 
+            value=2)
+
+### functions
+get.sel.samples.r <- reactive({
+  ss <- get.sel.samples(sample.classified,input$min.num.reads.sample)
+  return(ss)
+})
+
+
+get.total.num.reads <- reactive({
+  ss <- get.sel.samples.r()
+  total.num.reads<-sum(all.data[all.data$sample %in% ss,"nreads"])
+  total.num.reads
+})
+
+get.fitered.data <-  reactive({
+  ss <- get.sel.samples.r()
+  ds<-filter.data(ss,input$species.thr,input$genus.thr,input$family.thr)
+  ds<-ds[ds$nreads>=input$min.num.reads,,drop=FALSE]
+  return(ds)
+})
+get.class.mat <- reactive({
+  ds<-get.fitered.data()
+  ##print(head(ds))
+  ##print(input$threshold.min.reads)
+  return(ds)
+})
+
+get.sclass <- reactive({
+  ss <- get.sel.samples.r()
+  as <- all.data[all.data$sample%in%ss,]
+  sp.level <- aggregate(nreads ~ sample , data=as[as$pident >= as.integer(input$species.thr),], FUN="sum")
+  x<-cbind(sample.classified[sp.level$sample,],species.level=sp.level[,"nreads"])
+  #sclass<-x
+  x
+})
+
+get.top.id.species<-reactive({
+  data<-get.class.mat()
+  data<-data[data$species!="",,drop=FALSE]
+  data1 <- data[order(data$nreads,decreasing=TRUE), ,drop=FALSE]
+  if (as.numeric(input$top.x.hits)>0) {
+    d <- by(data1, data1["sample"], head, n=as.numeric(input$top.x.hits))
+    dd<-Reduce(rbind, d)
+  } else
+    dd<-data1
+  return(dd)
+})
+
+get.top.id.species.matrix<-reactive({
+  library(tidyr)
+  dd<-get.top.id.species()
+  head(dd)
+  x<-spread(dd, "sample", "nreads")
+  x[is.na(x)]<-0
+  x
+})
+```
+
+
+All data
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Initial data {data-width=700}
+```{r}
+DT::datatable(all.data[,-c(21)], 
+              options = list(
+                autoWidth = TRUE,
+                bPaginate = TRUE
+))
+```
+
+
+Summary results
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Initial Number of Samples
+
+```{r}
+## https://fontawesome.com/icons/vial?style=solid
+renderValueBox({
+  ns <- length(unique(sample.classified$sample))
+  valueBox(
+    value = ns,
+    icon = "fa-vial",
+    color = "purple"
+  )
+})
+```
+
+### Number of samples
+
+```{r}
+renderValueBox({
+  ss <- get.sel.samples.r()
+  ns <- length(ss)
+  valueBox(
+    value = ns,
+    icon = "fa-thumbs-up",
+    color = "green"
+  )
+})
+```
+
+### Number of reads
+
+```{r}
+renderValueBox({
+  nreads <- get.total.num.reads()
+  valueBox(
+    value = nreads,
+    icon = "fa-stream",
+    color = "orange"
+  )
+})
+```
+
+
+
+Row
+-----------------------------------------------------------------------
+
+### Reads classified per species, genus, ...
+```{r, fig.height=3, fig.width=5}
+
+species.gen.fam.stats.list<-reactive({
+  data<-get.class.mat()
+  ## number of reads assigned to species, genus, family and unclassified
+  ll<-list(species=sum(data$nreads[data$species!=""]),
+    genus=sum(data$nreads[data$genus!=""]),
+    family=sum(data$nreads[data$family!=""]),
+    orders=sum(data$nreads[data$order!=""]),
+    kingdoms=sum(data$nreads[data$kingdom!=""]),
+    unclassified=sum(data$nreads[data$family==""]))
+  ll
+})
+renderPlotly({
+  ll<-species.gen.fam.stats.list()
+  p <- plot_ly(values=as.numeric(ll), labels = names(ll), type = 'pie') %>%
+    layout(title = 'Reads',
+       xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+       yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+  p
+})
+```
+
+
+### Reads classified per species, genus, ...
+```{r, fig.height=3, fig.width=6}
+
+renderPlotly({
+  ll<-species.gen.fam.stats.list()
+  p <- plot_ly(
+    y = as.numeric(ll),
+    x = names(ll),
+    text=as.numeric(ll),
+    textposition = 'auto',
+    showlegend=TRUE,
+      color="velvet",
+    name = "Reads",
+    type = "bar")
+  
+  p
+})
+```
+
+### Id summary stats
+
+```{r, fig.height=3, fig.width=3, eval=TRUE}
+##Number of unique species, genus and families identified in all samples.
+
+library(plotly)
+get.id.sum.stats<-reactive({
+  data<-get.class.mat()
+  x<-list(
+    species=length(unique(data$species)),
+    genus=length(unique(data$genus)),
+    families=length(unique(data$family)),
+    orders=length(unique(data$order)),
+    kingdoms=length(unique(data$kingdom))
+    )
+   return(x) 
+})
+
+renderPlotly({
+  ll<-get.id.sum.stats()
+  ##  data<-aggregate(nreads~species+genus+family,data=data,FUN="sum")
+  ## number of reads assigned to species, genus, family and unclassified
+  p <- plot_ly(
+    y = as.numeric(ll),
+    x = names(ll),
+    text=as.numeric(ll),
+    textposition = 'auto',
+    showlegend=TRUE,
+    color="velvet",
+    type = "bar")
+  p
+})
+```
+
+Row
+-----------------------------------------------------------------------
+
+
+
+### sun
+```{r, fig.height=4, fig.width=4, eval=TRUE}
+library(sunburstR)
+
+paths.counts2hier<-reactive({
+  data3<-get.data2paths.counts()
+  x<-csv_to_hier(data3,delim=":")
+  return(x)
+})
+get.data2paths.counts<-reactive({
+  data<-get.fitered.data()
+  ## agreggate per id
+  data2<-data.frame(data,stringsAsFactors=FALSE)
+  data2$species<-as.character(data$species)
+  data2$species[data2$species==""]<-"Unk"
+  data2$genus<-as.character(data2$genus)
+  data2$genus[data2$genus==""]="Unk"
+  data2$family<-as.character(data2$family)
+  data2$family[data2$family==""]="Unk"
+  data2$order<-as.character(data2$order)
+  data2$order[data2$order==""]="Unk"
+  data2$kingdom<-as.character(data2$kingdom)
+  data2$kingdom[data2$kingdom==""]="Unk"
+  ids=paste(data$kingdom,data$order,data2$family,data2$genus,data2$species,sep=":")
+  data2$ids=ids
+  data3<-aggregate(data2$nreads,by=list(data2$ids),FUN=sum)
+  colnames(data3)<-c("paths","counts")
+  return(data3)
+})  
+renderSunburst({
+  library(sunburstR)
+  x<-paths.counts2hier()
+  p <- sunburst(data=x,count=TRUE,sumNodes=TRUE,percent=TRUE)
+  p
+})
+```
+
+Row
+-----------------------------------------------------------------------
+
+### tree
+
+
+```{r, fig.height=8, fig.width=5, eval=TRUE}
+library(d3Tree)
+  
+renderD3tree({
+  ##head(data)
+  x<-paths.counts2hier()
+  y=list(root = x ,
+     layout = 'collapse')
+  p=d3tree(data=y)
+  p
+})
+```
+
+```{r, fig.height=5, fig.width=5, eval=FALSE}
+#http://www.buildingwidgets.com/blog/2015/7/22/week-29-d3treer-v2
+#library(devtools)
+#devtools::install_github("timelyportfolio/d3treeR")
+## only works with R 3.6 or above
+renderPlotly({
+  library(plotly)
+  ##head(data)
+  data<-get.fitered.data()
+  colnames(data)
+  s1=data$species==""
+  g1=data$genus==""
+  f1=data$family==""
+  data<-data[!f1,,drop=FALSE]
+
+  x<- read.csv(
+    file = paste0(
+      "https://gist.githubusercontent.com/mkajava/",
+      "7515402/raw/9f80d28094dc9dfed7090f8fb3376ef1539f4fd2/",
+      "comment-sequences.csv"
+    )
+    ,header = TRUE
+    ,stringsAsFactors = FALSE
+  )
+  head(x)
+  d1 <- read.csv('https://raw.githubusercontent.com/plotly/datasets/master/coffee-flavors.csv')
+head(d1)
+## aqui
+  ids=gsub("-+$","",paste(data$family,data$genus,data$species,sep=":"))
+  parents=gsub("(^[^-]+$)|(-[^-]+$)","",ids)
+  labels=gsub("^.*-","",ids)
+  ##genus? 
+  ids2=parents[parents!=""]
+  parents2=gsub("(^[^-]+$)|(-[^-]+$)","",ids2)
+  data
+  ids2
+  
+  datal<-data.frame(list(ids=ids,
+              values=data$nreads,
+              labels=labels,
+              parents=parents))
+  p <- plot_ly(datal, ids = ~ids, labels = ~labels, parents = ~parents, type = 'sunburst')
+  p
+})
+```
+
+
+
+```{r, fig.height=5, fig.width=5, eval=FALSE}
+
+#devtools::install_github("timelyportfolio/d3treeR")
+  
+renderPlotly({
+  library(plotly)
+  ##head(data)
+  data<-get.fitered.data()
+  colnames(data)
+  s1=data$species==""
+  g1=data$genus==""
+  f1=data$family==""
+  data<-data[!f1,,drop=FALSE]
+
+  x<- read.csv(
+    file = paste0(
+      "https://gist.githubusercontent.com/mkajava/",
+      "7515402/raw/9f80d28094dc9dfed7090f8fb3376ef1539f4fd2/",
+      "comment-sequences.csv"
+    )
+    ,header = TRUE
+    ,stringsAsFactors = FALSE
+  )
+  head(x)
+  d1 <- read.csv('https://raw.githubusercontent.com/plotly/datasets/master/coffee-flavors.csv')
+head(d1)
+## aqui
+  ids=gsub("-+$","",paste(data$family,data$genus,data$species,sep=":"))
+  parents=gsub("(^[^-]+$)|(-[^-]+$)","",ids)
+  labels=gsub("^.*-","",ids)
+  ##genus? 
+  ids2=parents[parents!=""]
+  parents2=gsub("(^[^-]+$)|(-[^-]+$)","",ids2)
+  data
+  ids2
+  
+  datal<-data.frame(list(ids=ids,
+              values=data$nreads,
+              labels=labels,
+              parents=parents))
+  p <- plot_ly(datal, ids = ~ids, labels = ~labels, parents = ~parents, type = 'sunburst')
+  p
+})
+```
+
+
+
+
+Sample Level Analysis
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Reads per sample
+
+```{r, fig.height=7}
+renderPlotly({
+
+  ss <- get.sel.samples.r()
+  data<-sample.classified[ss,,drop=FALSE]
+  p <- plot_ly(values=data$`total reads`, labels = data$sample, type = 'pie') %>%
+    layout(title = 'Reads per sample',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+  p
+})
+```
+
+
+
+### Reads per sample
+
+```{r, fig.height=10}
+# species
+#colnames(data)
+## Compute the averages according to region and the occurrence of more
+## 
+#input<-list()
+#input$species.thr<-95
+
+renderPlot({
+  ##  
+  ##colnames(sclass)
+  par(mar=c(5,10,4,4))
+  sclass<-get.sclass()
+  barplot(sclass[,"total reads"],las=2,names.arg=rownames(sclass),
+       xlab = "sample", main = "Reads per sample",col="lightgrey",horiz=TRUE)
+  barplot(sclass[,"reads classified"],las=2,
+       xlab = "sample", main = "Reads per sample",col="orange",horiz=TRUE,add=TRUE)
+  barplot(sclass[,"species.level"],las=2,
+       xlab = "sample", main = "Reads per sample",col="green",horiz=TRUE,add=TRUE)
+
+})
+
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Reads per sample2
+
+```{r, fig.height=10}
+# species
+#colnames(data)
+## Compute the averages according to region and the occurrence of more
+## 
+#input<-list()
+#input$species.thr<-95
+
+renderPlotly({
+  ##  
+  ##colnames(sclass)
+  par(mar=c(5,10,4,4))
+  sclass<-get.sclass()
+  ##print("aaaaaa")
+  sclass<-x
+  p <- plot_ly(sclass, x = ~SF_Zoo, y = ~y, type = 'bar', orientation = 'h', name = 'SF Zoo',
+        marker = list(color = 'rgba(246, 78, 139, 0.6)',
+                      line = list(color = 'rgba(246, 78, 139, 1.0)',
+                                  width = 3))) %>%
+  add_trace(x = ~LA_Zoo, name = 'LA Zoo',
+            marker = list(color = 'rgba(58, 71, 80, 0.6)',
+                          line = list(color = 'rgba(58, 71, 80, 1.0)',
+                                      width = 3))) %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = ""),
+         yaxis = list(title =""))
+  barplot(sclass[,"total reads"],las=2,names.arg=rownames(sclass),
+       xlab = "sample", main = "Reads per sample",col="lightgrey",horiz=TRUE)
+  barplot(sclass[,"reads classified"],las=2,
+       xlab = "sample", main = "Reads per sample",col="orange",horiz=TRUE,add=TRUE)
+  barplot(sclass[,"species.level"],las=2,
+       xlab = "sample", main = "Reads per sample",col="green",horiz=TRUE,add=TRUE)
+
+})
+
+```
+
+
+Identification
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Top X hits per sample
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+library(sunburstR)
+  
+renderSunburst({
+  library(sunburstR)
+  sel<-get.top.id.species.matrix()
+  data<-get.fitered.data()
+  data<-data[data$species%in% sel$species,,drop=FALSE]
+  colnames(data)
+  #s1=data$species==""
+  #g1=data$genus==""
+  #f1=data$family==""
+  #data<-data[!f1,,drop=FALSE]
+  ## agreggate per id
+  data2<-data.frame(data,stringsAsFactors=FALSE)
+  data2$species<-as.character(data$species)
+  data2$species[data2$species==""]<-"Unk"
+  data2$genus<-as.character(data2$genus)
+  data2$genus[data2$genus==""]="Unk"
+  data2$family<-as.character(data2$family)
+  data2$family[data2$family==""]="Unk"
+  data2$order<-as.character(data2$order)
+  data2$order[data2$order==""]="Unk"
+  data2$kingdom<-as.character(data2$kingdom)
+  data2$kingdom[data2$kingdom==""]="Unk"
+
+  ids=paste(data$kingdom,data$order,data2$family,data2$genus,data2$species,sep=":")
+  data2$ids=ids
+  head(ids)
+  data3<-aggregate(data2$nreads,by=list(data2$ids),FUN=sum)
+  colnames(data3)<-c("paths","counts")
+  head(data3)
+  x<-csv_to_hier(data3,delim=":")
+  p <- sunburst(data=x,count=TRUE,sumNodes=TRUE,percent=TRUE)
+  p
+})
+```
+
+### Tree view
+
+```{r, fig.height=7, fig.width=5, eval=TRUE}
+library(d3Tree)
+  
+renderD3tree({
+  ##head(data)
+  sel<-get.top.id.species.matrix()
+  data<-get.fitered.data()
+  data<-data[data$species%in% sel$species,,drop=FALSE]
+  ## agreggate per id
+  data2<-data.frame(data,stringsAsFactors=FALSE)
+  data2$species<-as.character(data$species)
+  data2$species[data2$species==""]<-"Unk"
+  data2$genus<-as.character(data2$genus)
+  data2$genus[data2$genus==""]="Unk"
+  data2$family<-as.character(data2$family)
+  data2$family[data2$family==""]="Unk"
+  data2$order<-as.character(data2$order)
+  data2$order[data2$order==""]="Unk"
+  data2$kingdom<-as.character(data2$kingdom)
+  data2$kingdom[data2$kingdom==""]="Unk"
+
+  ids=paste(data$kingdom,data$order,data2$family,data2$genus,data2$species,sep=":")
+  data2$ids=ids
+  head(ids)
+  data3<-aggregate(data2$nreads,by=list(data2$ids),FUN=sum)
+  colnames(data3)<-c("paths","counts")
+  head(data3)
+  x<-csv_to_hier(data3,delim=":")
+  head(x)
+  y=list(root = x ,
+     layout = 'collapse')
+  p=d3tree(data=y)
+  p
+})
+```
+
+
+Row
+-----------------------------------------------------------------------
+
+### Top X hits per sample (heatmap)
+
+```{r, fig.height=8}
+library(d3heatmap)
+renderD3heatmap({
+  x<-get.top.id.species.matrix()
+  #head(dd)
+  #x<-dd
+  rownames(x)<-x$species
+  colfunc <- colorRampPalette(c("lightgray", "darkblue"))
+  colors=colfunc(10)
+#colors <- rev(topo.colors(8))
+#colnames(x)
+  x<-x[,-c(1,2,3,4,5,6),drop=FALSE]
+    print(head(x))
+  print(typeof(x))
+  d3heatmap(x,colors = colors,xaxis_font_size="10pt")
+  ##scale = "column")
+})
+```
+
+Row
+-----------------------------------------------------------------------
+
+
+### Sample level correlation
+
+```{r, fig.height=8}
+library(d3heatmap)
+renderD3heatmap({
+  x<-get.top.id.species.matrix()
+  rownames(x)<-x$species
+  colfunc <- colorRampPalette(c("lightgray","darkblue"))
+  colors=colfunc(10)
+#colors <- rev(topo.colors(8))
+
+  x<-x[,-c(1,2,3,4,5,6),drop=FALSE]
+  xc<-cor(x,method="spearman")
+  p<-d3heatmap(xc,colors = colors,xaxis_font_size="10pt")
+  p
+  ##scale = "column")
+})
+```
+
+
+```{r, fig.height=10, fig.width=10,  eval=FALSE}
+
+renderPlot({
+  x<-get.top.id.species.matrix()
+  suppressPackageStartupMessages(library("gplots"))
+#install.packages("gplots")
+  colfunc <- colorRampPalette(c("lightgray", "darkblue"))
+  colors=colfunc(10)
+#colors <- rev(topo.colors(8))
+  colors <- rev(topo.colors(9))
+  x2<-x
+  rownames(x2)<-x$species
+  x2<-x2[,-c(1,2,3),drop=FALSE]
+  xc<-cor(x2,method="spearman")
+  p<-heatmap.2(as.matrix(xc),scale="none",trace="none",col=colors,
+                    density.info="histogram",srtCol=45,margins=c(6,10))
+  print(p)
+},height=1000,width=1000)
+```
+
+
+
+  
+```{r, fig.height=10, fig.width=10,  eval=FALSE}
+
+  
+renderPlot({
+  
+
+  x<-get.top.id.species.matrix()
+  suppressPackageStartupMessages(library("gplots"))
+#install.packages("gplots")
+  colfunc <- colorRampPalette(c("lightgray", "darkblue"))
+  colors=colfunc(10)
+#colors <- rev(topo.colors(8))
+  colors <- rev(topo.colors(9))
+  x2<-x
+  rownames(x2)<-x$species
+  x2<-x2[,-c(1,2,3),drop=FALSE]
+  xc<-cor(x2,method="spearman")
+  library(d3heatmap)
+  #if (!require("devtools")) install.packages("devtools")
+  #devtools::install_github("rstudio/d3heatmap")
+  d3heatmap(as.matrix(xc), scale = "column", colors = "Spectral")
+},height=1000,width=1000)
+```
+
+
+```{r, fig.height=10, fig.width=10,  eval=FALSE}
+###  Top X hits per sample (heatmap)
+
+  
+renderPlot({
+  x<-get.top.id.species.matrix()
+  suppressPackageStartupMessages(library("gplots"))
+#install.packages("gplots")
+  colfunc <- colorRampPalette(c("lightgray", "darkblue"))
+  colors=colfunc(10)
+#colors <- rev(topo.colors(8))
+  #colors <- rev(topo.colors(9))
+  x2<-x
+  rownames(x2)<-x$species
+  x2<-x2[,-c(1,2,3),drop=FALSE]
+  p<-heatmap.2(log10(as.matrix(x2+1)),scale="none",trace="none",col=colors,
+                    density.info="histogram",srtCol=45,margins=c(6,13))
+  print(p)
+},height=1000,width=1400)
+```
+
+
+
