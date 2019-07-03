@@ -23,10 +23,9 @@ library(DT)
 library(r2d3)
 library(d3Tree)
 
-if ( is.null(ifile)  ) {
+if ( ! exists("ifile") ) {
    ifile<-"results.tsv.gz"
 }
-cat(">>>>>>",ifile,"\n")
 ## load id table
 all.data<-read.table(ifile,sep="\t",quote="",fill=TRUE,header=TRUE)
 ## default values
