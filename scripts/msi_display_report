@@ -8,7 +8,8 @@ if [ "$1-" !=  "-" ]; then
 else
     ifile=$def_file
 fi
-
+## We should provide the full path to shiny
+ifile=`readlink -f $ifile`
 echo "Looking for $ifile"
 if [ ! -e $ifile ]; then
     echo "ERROR: $ifile not found"
