@@ -21,7 +21,7 @@ set -eu
 ## OS tools
 SYSTEM_DEPS="gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
 
-SYSTEM_PACKS="ncurses-devel"
+SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc"
 
 ## TOOLS
 ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages"
@@ -219,8 +219,7 @@ source("http://bioconductor.org/biocLite.R")
 message("_____________________________________________________")
 
 message("Installing packages")
-packages2install<-c("Matrix","data.table","devtools","shiny","plotly","DT","r2d3","tidyr","sunburstR","d3heatmap","gplots")
-
+packages2install<-c("Matrix","data.table","devtools","shiny","plotly","DT","r2d3","tidyr","sunburstR","d3heatmap","gplots","rmarkdown","flexdashboard","d3Tree")
 
 for (p in packages2install ) {
   message("PACKAGE:",p,"\n")
@@ -229,6 +228,7 @@ for (p in packages2install ) {
 
 #message("PACKAGE:","d3treeR","\n")
 #devtools::install_github("timelyportfolio/d3treeR")
+
 
 EOF
 
@@ -341,7 +341,8 @@ function gen_env_sh {
     fi
     set -u
     cat <<EOF > $env_file
-#!/usr/bin/env bash
+# source $env_file
+# Created `date`
 export PATH=$INSTALL_BIN:\$PATH    
 export MSI_DIR=$INSTALL_DIR
 set +u
