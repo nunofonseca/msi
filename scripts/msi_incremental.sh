@@ -246,7 +246,7 @@ function polish_sequences {
 	if [ $cluster_size == 1 ]; then
 		ref=$out2/$cluster_id.fasta
 		# skip sequence since we cannot repolish later
-		continue
+		#continue
 		head -n 2 $out2/$cluster_id.fastq | sed "1s/^@/>/" > $ref		
 	else
 	    grep -E "^$cluster_id\s" $out2/final_clusters.csv |cut -f 2 > $out2/$cluster_id.seq_ids
@@ -278,8 +278,6 @@ function process_sample {
     dir=$1
     sample_name=$(basename $dir )
     pinfo "Processing sample:$sample_name"
-    CUR_ITERATION=`new_iteration $sample_name`
-    pinfo "Iteration: $CUR_ITERATION"
 
     SAMPLE_OUT_FOLDER=$OUT_FOLDER/$sample_name
     mkdir -p $SAMPLE_OUT_FOLDER
@@ -287,8 +285,16 @@ function process_sample {
 
     PROCESSED_FASTQS=$OUT_FOLDER/$sample_name/processed
     CENTROIDS=$OUT_FOLDER/$sample_name/$sample_name.centroids.fasta
+
+    if [ -e $CENTROIDS.tsv ] && [ "$LAZY-" == "y-" ]; then
+	echo "skipping processing of $sample_name ($CENTROIDS.tsv already created)"
+	return
+    fi
+    CUR_ITERATION=`new_iteration $sample_name`
+    pinfo "Iteration: $CUR_ITERATION"
+
     touch $PROCESSED_FASTQS
-        
+
     ## compress fastq files if they are uncompressed
     # UNCOMPRESSED=$(find  $ddd -name "*.fastq")
     # pinfo ">$UNCOMPRESSED<"
@@ -360,7 +366,7 @@ function process_sample {
 	if [  -e $out2/final_clusters.csv ] &&  [ "$LAZY-" == "y-" ]; then
 	    pinfo "Skipping clustering"
 	else
-	    isONclust  --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2
+	    isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $THREADS 
 	fi
 	cut -f 1 $out2/final_clusters.csv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
 	polish_sequences $representatives $out2
@@ -413,8 +419,28 @@ function process_sample {
 ## each top level directory corresponds to a sample
 for ddd in $FASTQ_DIRS; do
     process_sample $ddd
-    exit 1
 done
+
+## Generate a single file with all results
+### First add the sample name as a column before merging the files
+out_file=$OUT_FOLDER/results.tsv.gz
+rm -f $out_file $out_file.tmp
+for ddd in $FASTQ_DIRS; do
+    sample_name=$(basename $ddd)
+    f=$OUT_FOLDER/$sample_name/$sample_name.centroids.fasta.tsv
+    if [ ! -e $f ]; then
+	perror "File $f not found"
+	exit 3
+    fi
+    if [ ! -e $out_file.tmp ]; then
+	head -n 1 $f | sed 's/^/sample\t/' > $out_file.tmp
+    fi
+    tail -n +2 $f | sed "s/^/$sample_name\t/" >> $out_file.tmp
+done
+gzip $out_file.tmp
+mv $out_file.tmp.gz $out_file
+
+
 
 exit 0
 
