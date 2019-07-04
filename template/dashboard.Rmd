@@ -1,5 +1,7 @@
 ---
-title: "WIMS"
+params:
+  set_title: "WIMS"
+title: "`r params$set_title`"
 author: Nuno Fonseca
 output: 
    flexdashboard::flex_dashboard:
