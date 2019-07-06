@@ -10,8 +10,8 @@ SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscr
 SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc"
 
 ## TOOLS
+ALL_SOFT="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db blast_db_slow blast_db msi"
 ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db"
-
 
 cutadapt_VERSION=2.3
 isONclust_VERSION=0.0.4
@@ -39,6 +39,28 @@ CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSIO
 
 ####################################################################
 ##
+function install_blast_db_slow {
+    pinfo "Installing blast database to $INSTALL_DIR/db..."
+    pushd $INSTALL_DIR/db
+    ## depends on blast
+    update_blastdb.pl  --verbose nt taxdb  
+    popd
+    pinfo "Installing blast database...done"
+}
+function install_blast_db {
+    pinfo "Installing blast database to $INSTALL_DIR/db..."
+    pushd $INSTALL_DIR/db
+    gem install --verbose ncbi-blast-dbs
+    ncbi-blast-dbs nt taxdb
+    for f in $(ls *.tar.gz); do
+	tar xzvf $f
+	rm -f $f
+    done
+    ## make index
+    ##makembindex -input nt
+    popd
+    pinfo "Installing blast database...done"
+}
 function install_taxonomy_db {
     pinfo "Installing taxonomy database..."
     pushd $TEMP_FOLDER
@@ -105,13 +127,13 @@ function install_fastqc {
     rm -f tmp.tar.gz
     wget -c  $FASTQC_URL -O tmp.tar.gz
     unzip tmp.tar.gz
-    mkdir -p $INSTALL_DIR
-    rm -rf $INSTALL_DIR/FastQC  $INSTALL_DIR/fastqc
-    mv FastQC $INSTALL_DIR
-    pushd $INSTALL_DIR/FastQC
+    mkdir -p $INSTALL_BIN
+    rm -rf $INSTALL_BIN/FastQC  $INSTALL_BIN/fastqc
+    mv FastQC $INSTALL_BIN
+    pushd $INSTALL_BIN/FastQC
     chmod 755 fastqc
     sed "s.^#\!/usr/bin/perl.#\!/usr/bin/env perl." -i fastqc
-    ln -s `pwd`/fastqc $INSTALL_DIR
+    ln -s `pwd`/fastqc $INSTALL_BIN
     ## increase default memory
     sed -i "s/Xmx250m/Xmx1250m/" fastqc
     popd
@@ -173,6 +195,14 @@ function install_racon {
     rm -rf racon
     popd
     pinfo "Installing racon...done."
+}
+
+function install_msi {
+    pinfo "Installing msi..."
+    cp scripts/* $INSTALL_BIN
+    cp -r template $INSTALL_DIR
+    cp -r LICENSE README.md $INSTALL_DIR
+    pinfo "Installing msi...done."
 }
 
 
@@ -255,11 +285,7 @@ EOF
 #wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
 #gunzip -c gi_taxid_nucl.dmp.gz | sed 's/^/gi|/' > gi_taxid_nucl.map
 
-#wget https://github.com/shenwei356/taxonkit/releases/download/v0.3.0/taxonkit_linux_amd64.tar.gz
-#tar xzvf taxonkit_linux_amd64.tar.gz
-# chmod +x taxonkit
-# copy to a subfolderof blast
-# wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
+
 
 ######################################################################
 function pinfo {
@@ -381,7 +407,7 @@ fi
 
 source $MSI_ENV_FILE
 
-x="-$(echo $ALL_TOOLS make|sed -E 's/\s+/-|-/g')|-all-"
+x="-$(echo $ALL_SOFT make|sed -E 's/\s+/-|-/g')|-all-"
 echo $x
 if [[ "-$MODE-" =~ ^($x) ]]; then
     pinfo "Installation mode: $MODE"
