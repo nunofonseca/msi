@@ -1,20 +1,6 @@
 #!/usr/bin/env bash
 
 
-## default installation folder
-INSTALL_DIR=$PWD/msi
-
-if [ "$MSI_DIR-" != "-" ]; then
-    ## update previous installation
-    INSTALL_DIR=$MSI_DIR
-fi
-MSI_DIR=$INSTALL_DIR
-
-INSTALL_DIR=$(readlink -f $INSTALL_DIR)
-## PREFIX=INSTALL_DIR
-INSTALL_BIN=$INSTALL_DIR/bin
-TEMP_FOLDER=$INSTALL_DIR/tmp
-set -eu
 
 
 #########################################################
@@ -237,7 +223,6 @@ EOF
 
 ###############################################################
 ##
-
 ## local blast db
 ## depends on blast
 ## mkdir -p ~/blastdb; pushd ~/blastdb
@@ -303,6 +288,14 @@ function install_all {
     done
 }
 
+## default installation folder
+INSTALL_DIR=$PWD/msi
+set +eux
+if [ "$MSI_DIR-" != "-" ]; then
+    ## update previous installation
+    INSTALL_DIR=$MSI_DIR
+fi
+
 ## by default install all software
 MODE=all
 DEBUG=0
@@ -324,6 +317,15 @@ else
     set +eux
     set -eu
 fi
+
+
+MSI_DIR=$INSTALL_DIR
+
+INSTALL_DIR=$(readlink -f $INSTALL_DIR)
+## PREFIX=INSTALL_DIR
+INSTALL_BIN=$INSTALL_DIR/bin
+TEMP_FOLDER=$INSTALL_DIR/tmp
+set -eu
 
 mkdir -p $INSTALL_BIN
 TEMP_FOLDER=$(mktemp -d)
