@@ -17,7 +17,7 @@ CD_HIT_CLUSTER_THRESHOLD=0.95
 TL_DIR=$PWD
 # if no db is provided then a remote blast is performed
 LOCAL_BLAST_DB=~/blastdb/nt
-TAXONOMY_DATA_DIR=/home/nf/Research/Projects/WIP/CIBIO/MetaEnv/msi/res/t
+TAXONOMY_DATA_DIR=$MSI_DIR/db
 
 THREADS=2
 MAX_NUM_ITERATIONS=1000000
@@ -53,7 +53,7 @@ function perror {
 
 function usage {
     echo "xxx [ -s  -t root_dir  -p prot -d data_dir -c -h] -i raw_data_toplevel_folder"
-    echo <<EOF
+    cat <<EOF
  -i tl_dir - toplevel directory with the nanopore data. fastq files will be searched in \$tl_dir/*/fastq_pass. It is expected that the tree directory is organized as \$tl_dir/sample_name/fastq_pass.
  -m min_len    - minimum length of the reads
  -M max_len    - maximum length of the reads
@@ -100,8 +100,8 @@ function tidy_results {
     join -t $'\t' -a 1 -e X $out_file.tmp1 $out_file.tmp2  >> $out_file.tmp
     #join -t\t $out_file.tmp2 $out_file.tmp1  >> $out_file.tmp
     ## add lineage information when possible
-    echo taxid lineage kingdom phylum class order family genus species | tr " " "\t" > $out_file.tmp3 
-    cut -f 15 $out_file.tmp | tail -n +2 | sed "s/^$/unclassified/" | taxonkit lineage --data-dir $TAXONOMY_DATA_DIR |  taxonkit reformat  --data-dir $TAXONOMY_DATA_DIR  --lineage-field 2  --format   "{k}\t{p}\t{c}\t{o}\t{f}\t{g}\t{s}" >> $out_file.tmp3
+    echo taxid lineage kingdom phylum class order family genus species subspecies | tr " " "\t" > $out_file.tmp3 
+    cut -f 15 $out_file.tmp | tail -n +2 | sed "s/^$/unclassified/" | taxonkit lineage --data-dir $TAXONOMY_DATA_DIR |  taxonkit reformat  --data-dir $TAXONOMY_DATA_DIR  --lineage-field 2  --format   "{k}\t{p}\t{c}\t{o}\t{f}\t{g}\t{s}\t{S}" >> $out_file.tmp3
     paste -d "\t" $out_file.tmp $out_file.tmp3 > $out_file.tmp2
     
     mv $out_file.tmp2 $out_file
