@@ -18,15 +18,16 @@ TL_DIR=$PWD
 # if no db is provided then a remote blast is performed
 LOCAL_BLAST_DB=~/blastdb/nt
 TAXONOMY_DATA_DIR=/home/nf/Research/Projects/WIP/CIBIO/MetaEnv/msi/res/t
+
 THREADS=2
 MAX_NUM_ITERATIONS=1000000
 
 LAZY=y
 #################################################
 ## commands
-FASTQ_INFO_CMD=~/Research/Projects/WIP/EREAP/fastq_utils/bin/fastq_info
-FASTQ_QC_CMD=/home/nf/Research/Projects/WIP/CIBIO/MetaEnv/emg_setup/bin/FastQC/fastqc
-CUTA_CMD=/home/nf/.local/bin/cutadapt
+FASTQ_INFO_CMD=fastq_info
+FASTQ_QC_CMD=fastqc
+CUTA_CMD=cutadapt
 FASTQ_QUAL_TRIMMER=fastq_quality_trimmer
 BLAST_CMD=blastn
 CLUSTER_ADD_SIZE=msi_clustr_add_size.pl
