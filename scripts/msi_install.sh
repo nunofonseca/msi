@@ -5,12 +5,13 @@
 
 #########################################################
 ## OS tools
-SYSTEM_DEPS="gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
+SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
 
 SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc"
 
 ## TOOLS
-ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages"
+ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db"
+
 
 cutadapt_VERSION=2.3
 isONclust_VERSION=0.0.4
@@ -37,7 +38,19 @@ CD_HIT_DATE=2019-0228
 CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSION/cd-hit-v${CD_HIT_VERSION}-$CD_HIT_DATE.tar.gz
 
 ####################################################################
-## 
+##
+function install_taxonomy_db {
+    pinfo "Installing taxonomy database..."
+    pushd $TEMP_FOLDER
+    wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
+    mkdir -p $INSTALL_DIR/db
+    tar xzvf taxdump.tar.gz -C $INSTALL_DIR/db
+    echo Downloaded `date` > $INSTALL_DIR/db/taxonomy.info
+    rm -f taxdump.tar.gz
+    popd
+    pinfo "Installing taxonomy database...done"
+}
+
 function install_blast {
 	pinfo "Installing blast..."
 	pushd $TEMP_FOLDER
