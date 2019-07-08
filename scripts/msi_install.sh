@@ -11,7 +11,7 @@ SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc"
 
 ## TOOLS
 ALL_SOFT="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db blast_db_slow blast_db msi"
-ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db"
+ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
 
 cutadapt_VERSION=2.3
 isONclust_VERSION=0.0.4
@@ -214,7 +214,7 @@ function install_cd-hit {
     tar -zxvf tmp.tar.gz
     pushd cd-hit-v$CD_HIT_VERSION-$CD_HIT_DATE
     make
-    PREFIX=$INSTALL_DIR  make install
+    PREFIX=$INSTALL_BIN  make install
     popd
     rm -rf cd-hit-v$CD_HIT_VERSION-$CD_HIT_DATE tmp.tar.gz
     popd
