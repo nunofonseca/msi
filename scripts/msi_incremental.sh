@@ -397,8 +397,9 @@ function process_sample {
 	    clstr2tree.pl $CENTROIDS-cdhit.clstr.sorted  >  $CENTROIDS-cdhit.clstr.sorted.tree
 	    
 	    ## keep track of the number of representatives "merged" on each cluster
-	    cat $CENTROIDS-cdhit.clstr | $CLUSTER_ADD_SIZE $CENTROIDS.tmp4
-	    mv $CENTROIDS.tmp4 $CENTROIDS
+	    #cat $CENTROIDS-cdhit.clstr.sorted | $CLUSTER_ADD_SIZE $CENTROIDS.tmp4 > $CENTROIDS.tmp5
+	    $CLUSTER_ADD_SIZE $CENTROIDS.tmp4 $CENTROIDS-cdhit.clstr.sorted > $CENTROIDS.tmp5
+	    mv $CENTROIDS.tmp5 $CENTROIDS
 	fi
     fi
 
