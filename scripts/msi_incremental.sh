@@ -12,6 +12,8 @@ MAX_LEN=4000
 MIN_QUAL=10
 OUT_FOLDER=test_incr1
 CD_HIT_CLUSTER_THRESHOLD=0.95
+MIN_ID=50
+EVALUE=0.001
 
 ## workind directory
 TL_DIR=$PWD
@@ -70,7 +72,7 @@ function run_blast {
     query=$1
     out=$2
     # -use_index true
-    params="-task megablast -max_target_seqs 1 -evalue 0.1 -perc_identity 80"
+    params="-task megablast -max_target_seqs 1 -evalue $EVALUE -perc_identity $MiN_ID"
     if [ "$LOCAL_BLAST_DB-" == "-" ]; then
 	params+=" -remote -db nt"
 	pinfo "Remote blast query (this may take a while)"
