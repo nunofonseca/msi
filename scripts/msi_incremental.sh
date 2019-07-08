@@ -72,7 +72,7 @@ function run_blast {
     query=$1
     out=$2
     # -use_index true
-    params="-task megablast -max_target_seqs 1 -evalue $EVALUE -perc_identity $MiN_ID"
+    params="-task megablast -max_target_seqs 1 -evalue $EVALUE -perc_identity $MIN_ID"
     if [ "$LOCAL_BLAST_DB-" == "-" ]; then
 	params+=" -remote -db nt"
 	pinfo "Remote blast query (this may take a while)"
