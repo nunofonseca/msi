@@ -360,7 +360,13 @@ function process_sample {
 	    $FASTQ_QC_CMD -o $QC1 -f fastq $FQ_FILE_F1
 	    touch $QC1/$fq_file.qc_done
 
-	fi	
+	fi
+	## We may end up with no reads...
+	nlines=$(zcat $FQ_FILE_F1|wc -l)
+	if [ "$nlines-" == "0-" ]; then
+	    pinfo "Skipping $sample_name:$fq_file - no reads after QC"
+	    continue
+	fi
 	##
 	## keep it fast
 	out2=$SAMPLE_OUT_FOLDER/$pref-isonclust
@@ -377,48 +383,53 @@ function process_sample {
 	echo $fq_file $representatives >> $PROCESSED_FASTQS
     done
 
-    ## final file
-    cat `cut -f 2 -d\  $PROCESSED_FASTQS |sort -u` > $CENTROIDS.tmp
+    if [ "$(wc -l $PROCESSED_FASTQS|cut -f 1 -d\ )-" != "0-" ]; then
+	## final file
+	cat `cut -f 2 -d\  $PROCESSED_FASTQS |sort -u` > $CENTROIDS.tmp
 
-    if [ ! -e  $CENTROIDS ] || [ $PROCESSED_FASTQS -nt $CENTROIDS ]; then
-	## recluster
-	## -M unlimited memory
-	cd-hit-est  -i $CENTROIDS.tmp -o $CENTROIDS-cdhit  -c $CD_HIT_CLUSTER_THRESHOLD -M 0 -T $THREADS  -g 1 -G 1 -d 0
-	NC=`wc -l $CENTROIDS-cdhit| cut -f 1 -d\ `
-	if [ $NC -eq 0 ]; then
-	    # no clusters
-	    cp $CENTROIDS.tmp  $CENTROIDS
-	    ## TODO: make the format of centroids to be the same as the one from CLUSTER_ADD_SIZE
-	else
-	    ##
-	    grep "*$" $CENTROIDS-cdhit.clstr|cut -f 2 -d\>|sed "s/:size.*//" >$CENTROIDS.tmp2
-	    grep -A 1 -F -f $CENTROIDS.tmp2 $CENTROIDS.tmp | grep -v --  "--" > $CENTROIDS.tmp3
-	    mv $CENTROIDS.tmp3  $CENTROIDS.tmp4
-	    ## tree
-	    clstr_sort_by.pl < $CENTROIDS-cdhit.clstr  > $CENTROIDS-cdhit.clstr.sorted
-	    clstr2tree.pl $CENTROIDS-cdhit.clstr.sorted  >  $CENTROIDS-cdhit.clstr.sorted.tree
-	    
-	    ## keep track of the number of representatives "merged" on each cluster
-	    #cat $CENTROIDS-cdhit.clstr.sorted | $CLUSTER_ADD_SIZE $CENTROIDS.tmp4 > $CENTROIDS.tmp5
-	    $CLUSTER_ADD_SIZE $CENTROIDS.tmp4 $CENTROIDS-cdhit.clstr.sorted > $CENTROIDS.tmp5
-	    mv $CENTROIDS.tmp5 $CENTROIDS
+	if [ ! -e  $CENTROIDS ] || [ $PROCESSED_FASTQS -nt $CENTROIDS ]; then
+	    ## recluster
+	    ## -M unlimited memory
+	    cd-hit-est  -i $CENTROIDS.tmp -o $CENTROIDS-cdhit  -c $CD_HIT_CLUSTER_THRESHOLD -M 0 -T $THREADS  -g 1 -G 1 -d 0
+	    NC=`wc -l $CENTROIDS-cdhit| cut -f 1 -d\ `
+	    if [ $NC -eq 0 ]; then
+		# no clusters
+		cp $CENTROIDS.tmp  $CENTROIDS
+		## TODO: make the format of centroids to be the same as the one from CLUSTER_ADD_SIZE
+	    else
+		##
+		grep "*$" $CENTROIDS-cdhit.clstr|cut -f 2 -d\>|sed "s/:size.*//" >$CENTROIDS.tmp2
+		grep -A 1 -F -f $CENTROIDS.tmp2 $CENTROIDS.tmp | grep -v --  "--" > $CENTROIDS.tmp3
+		mv $CENTROIDS.tmp3  $CENTROIDS.tmp4
+		## tree
+		clstr_sort_by.pl < $CENTROIDS-cdhit.clstr  > $CENTROIDS-cdhit.clstr.sorted
+		clstr2tree.pl $CENTROIDS-cdhit.clstr.sorted  >  $CENTROIDS-cdhit.clstr.sorted.tree
+		
+		## keep track of the number of representatives "merged" on each cluster
+		#cat $CENTROIDS-cdhit.clstr.sorted | $CLUSTER_ADD_SIZE $CENTROIDS.tmp4 > $CENTROIDS.tmp5
+		$CLUSTER_ADD_SIZE $CENTROIDS.tmp4 $CENTROIDS-cdhit.clstr.sorted > $CENTROIDS.tmp5
+		mv $CENTROIDS.tmp5 $CENTROIDS
+	    fi
 	fi
-    fi
-
-    ## blast 
-    if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ ! $CENTROIDS.blast -nt $CENTROIDS ]; then
-	pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
-    else
-	run_blast $CENTROIDS  $CENTROIDS.blast
-    fi
-    ## blat??
+	## blast 
+	if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ ! $CENTROIDS.blast -nt $CENTROIDS ]; then
+	    pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
+	else
+	    run_blast $CENTROIDS  $CENTROIDS.blast
+	fi
+	## blat??
     
-    ## simple tsv file with the stats from blast
-    # summary file
-    tidy_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv
-    ## cp the results to the iteration folder
-    freeze_iteration_files $sample_name $CENTROIDS.blast $CENTROIDS.tsv $CENTROIDS $CENTROIDS-cdhit.clstr.sorted.tree
-    set_cur_iteration $sample_name $CUR_ITERATION    
+	## simple tsv file with the stats from blast
+	# summary file
+	tidy_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv
+	## cp the results to the iteration folder
+	freeze_iteration_files $sample_name $CENTROIDS.blast $CENTROIDS.tsv $CENTROIDS $CENTROIDS-cdhit.clstr.sorted.tree
+	set_cur_iteration $sample_name $CUR_ITERATION
+    else
+	## no results
+	touch $CENTROIDS.blast $CENTROIDS.tsv $CENTROIDS-cdhit.clstr.sorted.tree
+	pinfo "No data, no results"
+    fi
 }
 ## each top level directory corresponds to a sample
 for ddd in $FASTQ_DIRS; do
