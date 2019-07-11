@@ -9,6 +9,11 @@ $nmembers=0;
 $nreads=0;
 $file2update=shift;
 $clusterfile=shift;
+$min_nreads=shift;
+if ( $min_nreads eq "" ) {
+       $min_nreads=1;
+}
+print STDERR "min nreads=$min_nreads\n"   ;
 #open(my $fh, '<:encoding(UTF-8)', $file2update)
 open(my $fh, '<', $file2update)
     or die "Could not open file '$file2update' $!";
@@ -79,8 +84,9 @@ print STDERR (scalar keys %nreads_h)."\n";
 print STDERR "================================================================================\n";
 #use strict;
 #use warnings;
+my $to_print=1;
 while (my $line = <$fh>) {
-    chomp $line;
+    chomp $line;    
     if ($line =~ /^>/) {
 	##
 	## > is part of the representative sequence
@@ -90,18 +96,18 @@ while (my $line = <$fh>) {
 	##print STDERR ">>>>>$representative<< ===== >>$rline<< \n";
 	$nmembers=$nmembers_h{"$representative"};
 	$nreads=$nreads_h{"$representative"};
-
-	$representative=~s/\s+/:/g;
-	print "$representative:$rline:members=$nmembers:size=$nreads\n";
 	if ( $nreads eq "" || nmembers eq "") {
-	    print STDERR "$representative not found in  stdin";
-	    exit 1;
+	       print STDERR "$representative not found in  stdin";
+	       exit 1;
 	}
-	#else {
-	#    print STDERR "Found!!!";	    
-	#}
-
+	if ( $nreads >= $min_nreads ) {
+	       $representative=~s/\s+/:/g;
+	       print "$representative:$rline:members=$nmembers:size=$nreads\n";
+	       $to_print=1;
+        } else {
+      	       $to_print=0;
+	}
     } else {
-	print "$line\n";
+	print "$line\n" if ( $to_print == 1);
     }    
 }
