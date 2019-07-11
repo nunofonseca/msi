@@ -12,8 +12,10 @@ MAX_LEN=4000
 MIN_QUAL=10
 OUT_FOLDER=test_incr1
 CD_HIT_CLUSTER_THRESHOLD=0.95
-MIN_ID=50
+MIN_ID=70
 EVALUE=0.001
+## minimum number of reads that a cluster must have to  pass the classification step (blastnig)
+#MIN_SUPPORT=2
 
 ## workind directory
 TL_DIR=$PWD
@@ -87,28 +89,28 @@ function run_blast {
     mv $out.tmp $out
 }
 
-function tidy_results {
-    fasta_file=$1
-    blast_tsv=$2
-    out_file=$3
-    #pident means Percentage of identical matches
-    #nident means Number of identical matches
-    #mismatch means Number of mismatches
-    echo read nreads nbatches qseqid sseqid evalue bitscore pident nident mismatch qlen length sgi pid staxids ssciname scomnames stitle  | tr " " "\t" > $out_file.tmp
-    grep "^>" $fasta_file | sed "s/^>//" | cut -f 1 -d\  > $out_file.tmp2
-    sed -E "s/^.*:(size=.*:size=.*)$/\1/;s/:/\t/g;s/size=//g;s/members=//"  $out_file.tmp2  > $out_file.tmp3    
-    paste -d "\t" $out_file.tmp2 $out_file.tmp3 | sed -E "s/:size=[^\t]+//"| sort -u -k 1b,1 > $out_file.tmp1
-    sort -k 1b,1 $blast_tsv | sed -E "s/:size=[^\t]+//" > $out_file.tmp2
-    join -t $'\t' -a 1 -e X $out_file.tmp1 $out_file.tmp2  >> $out_file.tmp
-    #join -t\t $out_file.tmp2 $out_file.tmp1  >> $out_file.tmp
-    ## add lineage information when possible
-    echo taxid lineage kingdom phylum class order family genus species subspecies | tr " " "\t" > $out_file.tmp3 
-    cut -f 15 $out_file.tmp | tail -n +2 | sed "s/^$/unclassified/" | taxonkit lineage --data-dir $TAXONOMY_DATA_DIR |  taxonkit reformat  --data-dir $TAXONOMY_DATA_DIR  --lineage-field 2  --format   "{k}\t{p}\t{c}\t{o}\t{f}\t{g}\t{s}\t{S}" >> $out_file.tmp3
-    paste -d "\t" $out_file.tmp $out_file.tmp3 > $out_file.tmp2
+# function tidy_results {
+#     fasta_file=$1
+#     blast_tsv=$2
+#     out_file=$3
+#     #pident means Percentage of identical matches
+#     #nident means Number of identical matches
+#     #mismatch means Number of mismatches
+#     echo read nreads nbatches qseqid sseqid evalue bitscore pident nident mismatch qlen length sgi pid staxids ssciname scomnames stitle  | tr " " "\t" > $out_file.tmp
+#     grep "^>" $fasta_file | sed "s/^>//" | cut -f 1 -d\  > $out_file.tmp2
+#     sed -E "s/^.*:(size=.*:size=.*)$/\1/;s/:/\t/g;s/size=//g;s/members=//"  $out_file.tmp2  > $out_file.tmp3    
+#     paste -d "\t" $out_file.tmp2 $out_file.tmp3 | sed -E "s/:size=[^\t]+//"| sort -u -k 1b,1 > $out_file.tmp1
+#     sort -k 1b,1 $blast_tsv | sed -E "s/:size=[^\t]+//" > $out_file.tmp2
+#     join -t $'\t' -a 1 -e X $out_file.tmp1 $out_file.tmp2  >> $out_file.tmp
+#     #join -t\t $out_file.tmp2 $out_file.tmp1  >> $out_file.tmp
+#     ## add lineage information when possible
+#     echo taxid lineage kingdom phylum class order family genus species subspecies | tr " " "\t" > $out_file.tmp3 
+#     cut -f 15 $out_file.tmp | tail -n +2 | sed "s/^$/unclassified/" | taxonkit lineage --data-dir $TAXONOMY_DATA_DIR |  taxonkit reformat  --data-dir $TAXONOMY_DATA_DIR  --lineage-field 2  --format   "{k}\t{p}\t{c}\t{o}\t{f}\t{g}\t{s}\t{S}" >> $out_file.tmp3
+#     paste -d "\t" $out_file.tmp $out_file.tmp3 > $out_file.tmp2
     
-    mv $out_file.tmp2 $out_file
-    rm -f $out_file.tmp*
-}
+#     mv $out_file.tmp2 $out_file
+#     rm -f $out_file.tmp*
+# }
 
 #tidy_results blast_example.fasta blast_example.tsv lixo.tsv
 #tidy_results test_incr1/test1_c/test1_c.centroids.fasta test_incr1/test1_c/test1_c.centroids.fasta.blast  lixo.tsv
@@ -406,11 +408,13 @@ function process_sample {
 		clstr2tree.pl $CENTROIDS-cdhit.clstr.sorted  >  $CENTROIDS-cdhit.clstr.sorted.tree
 		
 		## keep track of the number of representatives "merged" on each cluster
-		#cat $CENTROIDS-cdhit.clstr.sorted | $CLUSTER_ADD_SIZE $CENTROIDS.tmp4 > $CENTROIDS.tmp5
+		## add the size the reformat the headers
 		$CLUSTER_ADD_SIZE $CENTROIDS.tmp4 $CENTROIDS-cdhit.clstr.sorted > $CENTROIDS.tmp5
 		mv $CENTROIDS.tmp5 $CENTROIDS
 	    fi
 	fi
+
+	## TODO: Filter based on the number of reads supporting the clusters
 	## blast 
 	if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ ! $CENTROIDS.blast -nt $CENTROIDS ]; then
 	    pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
@@ -421,7 +425,8 @@ function process_sample {
     
 	## simple tsv file with the stats from blast
 	# summary file
-	tidy_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv
+	msi_tidyup_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv.tmp $TAXONOMY_DATA_DIR
+	mv $CENTROIDS.tsv.tmp $CENTROIDS.tsv
 	## cp the results to the iteration folder
 	freeze_iteration_files $sample_name $CENTROIDS.blast $CENTROIDS.tsv $CENTROIDS $CENTROIDS-cdhit.clstr.sorted.tree
 	set_cur_iteration $sample_name $CUR_ITERATION
