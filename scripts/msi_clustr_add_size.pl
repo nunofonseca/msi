@@ -83,14 +83,15 @@ while (my $line = <$fh>) {
     chomp $line;
     if ($line =~ /^>/) {
 	##
-	## remove trailing > and split on the first space
-	##$line=~s/^>//;a
+	## > is part of the representative sequence
 	($representative, $rline) = split (/\s+/, $line, 2);
-	$rline=~s/\s+/:/;
+	$rline=~s/\s+/:/g;
+
 	##print STDERR ">>>>>$representative<< ===== >>$rline<< \n";
 	$nmembers=$nmembers_h{"$representative"};
 	$nreads=$nreads_h{"$representative"};
 
+	$representative=~s/\s+/:/g;
 	print "$representative:$rline:members=$nmembers:size=$nreads\n";
 	if ( $nreads eq "" || nmembers eq "") {
 	    print STDERR "$representative not found in  stdin";
