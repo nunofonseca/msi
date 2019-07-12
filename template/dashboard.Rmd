@@ -32,20 +32,19 @@ if ( ! exists("ifile") ) {
 all.data<-read.table(ifile,sep="\t",quote="",fill=TRUE,header=TRUE)
 ## default values
 max.num.reads<-min(sum(all.data$nreads),1000)
-
+all.data$species
 
 threshold.species<-96
 threshold.genus<-90
 threshold.family<-82
-threshold.min.reads<-100
-min.num.reads.sample<-1000
+threshold.min.reads<-1
+min.num.reads.sample<-1
 
 
 ##
 ## initial stats per sample
 sample.tot.reads <- aggregate(nreads ~ sample , data=all.data, FUN="sum")
 rownames(sample.tot.reads)<-sample.tot.reads$sample
-
 sample.classified <- aggregate(nreads ~ sample , data=all.data[all.data$species!="",],FUN="sum")
 sample.classified <- cbind(sample.classified,total=sample.tot.reads[sample.classified$sample,"nreads"])
 

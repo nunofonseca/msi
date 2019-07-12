@@ -15,7 +15,7 @@ CD_HIT_CLUSTER_THRESHOLD=0.95
 MIN_ID=70
 EVALUE=0.001
 ## minimum number of reads that a cluster must have to  pass the classification step (blastnig)
-#MIN_SUPPORT=2
+CLUSTER_MIN_READS=1
 
 ## workind directory
 TL_DIR=$PWD
@@ -56,12 +56,13 @@ function perror {
 }
 
 function usage {
-    echo "xxx [ -s  -t root_dir  -p prot -d data_dir -c -h] -i raw_data_toplevel_folder"
+    echo "xxx [ -s  -t root_dir  -p prot -d data_dir -c -X min_reads -h ] -i raw_data_toplevel_folder"
     cat <<EOF
  -i tl_dir - toplevel directory with the nanopore data. fastq files will be searched in \$tl_dir/*/fastq_pass. It is expected that the tree directory is organized as \$tl_dir/sample_name/fastq_pass.
  -m min_len    - minimum length of the reads
  -M max_len    - maximum length of the reads
  -q min_qual   - minimum quality
+ -C min_reads  - minimum number of reads that a cluster should have (Default=1)
  -o out_folder -  output folder
  -b blast_database - path to the blast database
  -t threads        - maximum number of threads
@@ -168,10 +169,11 @@ function freeze_iteration_files {
 
 #######################################################################################
 # 
-while getopts "n:i:m:M:q:o:b:t:hd"  Option; do
+while getopts "C:n:i:m:M:q:o:b:t:hd"  Option; do
     case $Option in
 	i ) TL_DIR=$OPTARG;;
 	d ) set -x;;
+	C ) CLUSTER_MIN_READS=$OPTARG;;
 	m ) MIN_LEN=$OPTARG;;
 	M ) MAX_LEN=$OPTARG;;
 	q ) MIN_QUAL=$OPTARG;;
@@ -409,7 +411,7 @@ function process_sample {
 		
 		## keep track of the number of representatives "merged" on each cluster
 		## add the size the reformat the headers
-		$CLUSTER_ADD_SIZE $CENTROIDS.tmp4 $CENTROIDS-cdhit.clstr.sorted > $CENTROIDS.tmp5
+		$CLUSTER_ADD_SIZE $CENTROIDS.tmp4 $CENTROIDS-cdhit.clstr.sorted $CLUSTER_MIN_READS > $CENTROIDS.tmp5
 		mv $CENTROIDS.tmp5 $CENTROIDS
 	    fi
 	fi
