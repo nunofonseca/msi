@@ -379,7 +379,13 @@ function process_sample {
 	if [  -e $out2/final_clusters.csv ] &&  [ "$LAZY-" == "y-" ]; then
 	    pinfo "Skipping clustering"
 	else
-	    isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $THREADS 
+	    let thr=`expr 1 + \( $nlines / 30 \)`
+	    if [ $thr -le  $THREADS ]; then
+		CTHREADS=1
+	    else
+		CTHREADS=$THREADS
+	    fi
+	    isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $CTHREADS	    
 	fi
 	cut -f 1 $out2/final_clusters.csv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
 	polish_sequences $representatives $out2
@@ -415,20 +421,26 @@ function process_sample {
 		mv $CENTROIDS.tmp5 $CENTROIDS
 	    fi
 	fi
-
-	## TODO: Filter based on the number of reads supporting the clusters
-	## blast 
-	if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ ! $CENTROIDS.blast -nt $CENTROIDS ]; then
-	    pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
+	NC=`wc -l $CENTROIDS| cut -f 1 -d\ `
+	if [ $NC -eq 0 ]; then
+	    ## empty fasta file
+	    touch $CENTROIDS.tsv
+	    touch $CENTROIDS.blast
 	else
-	    run_blast $CENTROIDS  $CENTROIDS.blast
-	fi
-	## blat??
+	    ## TODO: Filter based on the number of reads supporting the clusters
+	    ## blast 
+	    if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ ! $CENTROIDS.blast -nt $CENTROIDS ]; then
+		pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
+	    else
+		run_blast $CENTROIDS  $CENTROIDS.blast
+	    fi
+	    ## blat??
     
-	## simple tsv file with the stats from blast
-	# summary file
-	msi_tidyup_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv.tmp $TAXONOMY_DATA_DIR
-	mv $CENTROIDS.tsv.tmp $CENTROIDS.tsv
+	    ## simple tsv file with the stats from blast
+	    # summary file
+	    msi_tidyup_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv.tmp $TAXONOMY_DATA_DIR
+	    mv $CENTROIDS.tsv.tmp $CENTROIDS.tsv
+	fi
 	## cp the results to the iteration folder
 	freeze_iteration_files $sample_name $CENTROIDS.blast $CENTROIDS.tsv $CENTROIDS $CENTROIDS-cdhit.clstr.sorted.tree
 	set_cur_iteration $sample_name $CUR_ITERATION
