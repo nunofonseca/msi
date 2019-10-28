@@ -385,12 +385,21 @@ function process_sample {
 	    else
 		CTHREADS=$THREADS
 	    fi
-	    isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $CTHREADS	    
+#	    nreads=$(fastq_num_reads $FQ_FILE_F1)
+#	    if [ $nreads -gt 1 ]; then
+		isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $CTHREADS
+#	    fi
 	fi
-	cut -f 1 $out2/final_clusters.csv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
-	polish_sequences $representatives $out2
-	ls -l $representatives
-	echo $fq_file $representatives >> $PROCESSED_FASTQS
+	if [ -e $out2/final_clusters.csv ]; then
+	    cut -f 1 $out2/final_clusters.csv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
+	    polish_sequences $representatives $out2
+	    #ls -l $representatives
+	    echo $fq_file $representatives >> $PROCESSED_FASTQS
+	else
+	    echo "isONclust did not generate $out2/final_clusters.csv "
+	    exit 3
+	fi
+	
     done
 
     if [ "$(wc -l $PROCESSED_FASTQS|cut -f 1 -d\ )-" != "0-" ]; then
