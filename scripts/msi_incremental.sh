@@ -475,10 +475,15 @@ for ddd in $FASTQ_DIRS; do
 	perror "File $f not found"
 	exit 3
     fi
-    if [ ! -e $out_file.tmp ]; then
-	head -n 1 $f | sed 's/^/sample\t/' > $out_file.tmp
+    if [ ! -s $f ]; then
+	# empty file
+	pinfo $f empty
+    else
+	if [ ! -e $out_file.tmp ]; then
+	    head -n 1 $f | sed 's/^/sample\t/' > $out_file.tmp
+	fi
+	tail -n +2 $f | sed "s/^/$sample_name\t/" >> $out_file.tmp
     fi
-    tail -n +2 $f | sed "s/^/$sample_name\t/" >> $out_file.tmp
 done
 gzip $out_file.tmp
 mv $out_file.tmp.gz $out_file
