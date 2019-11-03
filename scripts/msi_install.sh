@@ -7,11 +7,12 @@
 ## OS tools
 SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
 
-SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc"
+SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python-devel"
 
 ## TOOLS
 ALL_SOFT="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db blast_db_slow blast_db msi"
 ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
+#ALL_TOOLS="isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
 
 cutadapt_VERSION=2.3
 isONclust_VERSION=0.0.4
@@ -152,17 +153,19 @@ function install_cutadapt {
     set +ex
     pip3 uninstall -y cutadapt || pinfo No previous installation of cutadapt found
     set -ex
-    pip3 install --upgrade-strategy only-if-needed --prefix $INSTALL_DIR cutadapt==$cutadapt_VERSION
+    export PYTHONUSERBASE=$INSTALL_DIR/python
+    pip3 install --upgrade-strategy only-if-needed cutadapt==$cutadapt_VERSION --user
     pinfo "Installing cutadapt...done."
 }
 
 function install_isONclust {
     pinfo "Installing isONclust..."
     ## https://github.com/ksahlin/isONclust
-## 2019-04-29: does not work as advertised (broken examples) - comment line 157
-    pip3 install --prefix $INSTALL_DIR wheel
-    pip3 install --prefix $INSTALL_DIR parasail
-    pip3 install --prefix $INSTALL_DIR   isOnclust==$isONclust_VERSION
+    ## 2019-04-29: does not work as advertised (broken examples) - comment line 157
+    export PYTHONUSERBASE=$INSTALL_DIR/python
+    pip3 install  wheel --user
+    pip3 install parasail --user
+    pip3 install isOnclust==$isONclust_VERSION --user
     
     #git clone https://github.com/ksahlin/isONclust.git
     #cd isONclust
@@ -369,9 +372,10 @@ else
 fi
 
 
+INSTALL_DIR=$(readlink -f $INSTALL_DIR)
 MSI_DIR=$INSTALL_DIR
 
-INSTALL_DIR=$(readlink -f $INSTALL_DIR)
+
 ## PREFIX=INSTALL_DIR
 INSTALL_BIN=$INSTALL_DIR/bin
 TEMP_FOLDER=$INSTALL_DIR/tmp
@@ -399,10 +403,11 @@ export PATH=$INSTALL_BIN:\$PATH
 export MSI_DIR=$INSTALL_DIR
 set +u
 ## Python
+export PYTHONUSERBASE=\$MSI_DIR/python
 export PYTHONPATH=$MSI_DIR/lib64/$python_dir/site-packages:\$MSI_DIR/lib/$python_dir/site-packages:\$MSI_DIR/lib64/$python3_dir/site-packages:\$MSI_DIR/lib/$python3_dir/site-packages:$PYTHONPATH
 ## R packages
 export R_LIBS=\$MSI_DIR/Rlibs:\$R_LIBS
-
+PATH=\$MSI_DIR/python/bin:\$PATH
 # BLAST
 if [ "\$BLASTDB-" == "-" ]; then
 export BLASTDB=\$MSI_DIR/db
