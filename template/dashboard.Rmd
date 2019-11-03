@@ -26,7 +26,7 @@ library(r2d3)
 library(d3Tree)
 
 if ( ! exists("ifile") ) {
-   ifile<-"../results.tsv.gz"
+   ifile<-"/home/nf/Research/Projects/WIP/CIBIO/MetaEnv/Minion_data/2019_August_002_Mussels/test_incr1/results.tsv.gz"
 }
 ## load id table
 all.data<-read.table(ifile,sep="\t",quote="",fill=TRUE,header=TRUE)
@@ -614,7 +614,7 @@ renderSunburst({
   data2$kingdom<-as.character(data2$kingdom)
   data2$kingdom[data2$kingdom==""]="Unk"
 
-  ids=paste(data$kingdom,data$order,data2$family,data2$genus,data2$species,sep=":")
+  ids=paste(data2$kingdom,data2$order,data2$family,data2$genus,data2$species,sep=":")
   data2$ids=ids
   head(ids)
   data3<-aggregate(data2$nreads,by=list(data2$ids),FUN=sum)
