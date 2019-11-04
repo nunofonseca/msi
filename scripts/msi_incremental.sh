@@ -65,6 +65,9 @@ function usage {
  -C min_reads  - minimum number of reads that a cluster should have (Default=1)
  -o out_folder -  output folder
  -b blast_database - path to the blast database
+ -B blast_min_id   - value passed to blast (minimum % id)
+ -E blast_evalue   - value passed to blast (minimum e-value)
+ -T min_cluster_id2- minimum cluster identity (sequences with a value greater or equal are clustered together) 
  -t threads        - maximum number of threads
  -h  - provides usage information
 EOF
@@ -169,11 +172,14 @@ function freeze_iteration_files {
 
 #######################################################################################
 # 
-while getopts "C:n:i:m:M:q:o:b:t:hd"  Option; do
+while getopts "B:T:E:C:n:i:m:M:q:o:b:t:hd"  Option; do
     case $Option in
 	i ) TL_DIR=$OPTARG;;
 	d ) set -x;;
 	C ) CLUSTER_MIN_READS=$OPTARG;;
+	T ) CD_HIT_CLUSTER_THRESHOLD=$OPTARG;;
+	B ) MIN_ID=$OPTARG;;
+	E ) EVALUE=$OPTARG;;
 	m ) MIN_LEN=$OPTARG;;
 	M ) MAX_LEN=$OPTARG;;
 	q ) MIN_QUAL=$OPTARG;;
