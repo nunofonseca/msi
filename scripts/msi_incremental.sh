@@ -65,9 +65,9 @@ function usage {
  -C min_reads  - minimum number of reads that a cluster should have (Default=1)
  -o out_folder -  output folder
  -b blast_database - path to the blast database
- -B blast_min_id   - value passed to blast (minimum % id)
- -E blast_evalue   - value passed to blast (minimum e-value)
- -T min_cluster_id2- minimum cluster identity (sequences with a value greater or equal are clustered together) 
+ -B blast_min_id   - value passed to blast (minimum % id - value between 0 and 100)
+ -E blast_evalue   - value passed to blast (minimum e-value - value < 1)
+ -T min_cluster_id2- minimum cluster identity (sequences with a value greater or equal are clustered together - value between 0 and 1) 
  -t threads        - maximum number of threads
  -h  - provides usage information
 EOF
