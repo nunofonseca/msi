@@ -178,7 +178,7 @@ function install_minimap2 {
     rm -f tmp.tar.gz
     wget -c $minimap2_URL -O tmp.tar.gz
     tar -jxvf tmp.tar.gz
-    cp minimap2-${minimap2_VERSION}_x64-linux/minimap2 $INSTALL_BIN
+    cp minimap2-${minimap2_VERSION}_x64-linux/{minimap2,k8,paftools.js} $INSTALL_BIN
     rm -rf minimap2-${minimap2_VERSION}_x64-linux  tmp.tar.gz
     popd
     pinfo "Installing minimap2...done."
