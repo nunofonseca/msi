@@ -31,7 +31,7 @@ TAXONKIT_VERSION=0.3.0
 TAXONKIT_URL=https://github.com/shenwei356/taxonkit/releases/download/v$TAXONKIT_VERSION/taxonkit_linux_amd64.tar.gz
 
 
-minimap2_VERSION=2.16
+minimap2_VERSION=2.17
 minimap2_URL="https://github.com/lh3/minimap2/releases/download/v$minimap2_VERSION/minimap2-${minimap2_VERSION}_x64-linux.tar.bz2"
 
 CD_HIT_VERSION=4.8.1
