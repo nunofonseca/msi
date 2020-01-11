@@ -14,7 +14,8 @@ ALL_SOFT="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd
 ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
 #ALL_TOOLS="isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
 
-cutadapt_VERSION=2.3
+# upgraded 2019-12-04:
+cutadapt_VERSION=2.7
 isONclust_VERSION=0.0.4
 
 blast_VERSION=2.9.0
