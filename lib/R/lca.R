@@ -19,13 +19,20 @@
 # =========================================================
 
 
-## TODO: handle NA??
+##
 ## unknown??
-lca <- function(paths, threshold=1.0, sep=":",remove.dups=FALSE) {
-
+##
+## 
+lca <- function(paths, threshold=1.0, sep=":",remove.dups=FALSE,
+                remove.trailing.nas=FALSE) {
+    
     if (is.null(paths)) return(NA)
     # remove dups...  or not 
     if (remove.dups) paths<-unique(paths)
+    ##
+    if ( remove.trailing.nas ) {
+        paths <- sapply(paths,FUN=sub,pattern="(:NA)+$",replacement="",ignore.case=TRUE)   
+    }
     # workaround to handle paths with toplevel entries only
     paths<-paste(paths,":NA-",sep="")
     v<-sapply(paths,function(l) strsplit(l,sep)[[1]])
@@ -83,7 +90,6 @@ test_lca <- function () {
   tests[["t5"]]<-list(input=c("a:b:c:d","a:b:c:d:e"),output=c("a:b:c:d"))
   tests[["t6"]]<-list(input=c("a:b:c:d","a:b:c:d:e","a:b:c:d:e"),output=c("a:b:c:d"))
   tests[["t7"]]<-list(input=c("a:b:c:d","a:b:c:d:e","a:b:c:d:e"),threshold=0.6,output=c("a:b:c:d:e"))
-lca("1")
   tests[["t8"]]<-list(input=c("1"),output=c("1"))
   tests[["t9"]]<-list(input=c("1:2","1:2","1:2"),output=c("1:2"))
   tests[["t10"]]<-list(input=c("1:2","1:2","1:2","1:3"),output=c("1"))
@@ -91,6 +97,8 @@ lca("1")
   tests[["t12"]]<-list(input=c("1:2","1:2","1:2","1:2:4"),output=c("1:2"))
   tests[["t13"]]<-list(input=c("1","2","1","1"),output=NA)
   tests[["t14"]]<-list(input=c("1","2","2","1"),output=NA)
+  tests[["t15"]]<-list(input=c("1","2","2","1"),output=NA,remove.trailing.nas=TRUE)
+  tests[["t16"]]<-list(input=c("1:2:NA:NA:NA:NA","1:2:NA","1:2","1:2:4:NA"),output=c("1:2"),remove.trailing.nas=TRUE)
 
   
   for ( t in names(tests)) {
@@ -116,5 +124,4 @@ lca("1")
   }
 }
 
-
-test_lca()
+##test_lca()
