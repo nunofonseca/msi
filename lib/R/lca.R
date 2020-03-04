@@ -22,18 +22,29 @@
 ##
 ## unknown??
 ##
-## 
-lca <- function(paths, threshold=1.0, sep=":",remove.dups=FALSE,
+## remove.trailing.nas=TRUE - removes :NA  from the end of the path.
+##                     e.g. level1:level2:NA:NA becomes level1:level2
+## normalize.entries=TRUE - remove trailing numbers, .sp and words after the first space for the last entry in the path
+lca <- function(paths, threshold=1.0, sep=":",                
+                remove.dups=FALSE,
+                normalize.entries=FALSE,
                 remove.trailing.nas=FALSE) {
     
     if (is.null(paths)) return(NA)
     # remove dups...  or not 
     if (remove.dups) paths<-unique(paths)
-    ##
+    ## Normalize netries
+    if ( normalize.entries ) {
+        paths <- sapply(paths,FUN=sub,pattern=" [^:]+$",replacement="",ignore.case=TRUE)
+        paths <- sapply(paths,FUN=sub,pattern="([^0-9])[0-9]+$",replacement="\\1",ignore.case=TRUE)
+        
+    }
+
+    ## remove trailing NAs
     if ( remove.trailing.nas ) {
         paths <- sapply(paths,FUN=sub,pattern="(:NA)+$",replacement="",ignore.case=TRUE)   
     }
-    # workaround to handle paths with toplevel entries only
+    ## workaround to handle paths with toplevel entries only
     paths<-paste(paths,":NA-",sep="")
     v<-sapply(paths,function(l) strsplit(l,sep)[[1]])
     ##
@@ -99,6 +110,8 @@ test_lca <- function () {
   tests[["t14"]]<-list(input=c("1","2","2","1"),output=NA)
   tests[["t15"]]<-list(input=c("1","2","2","1"),output=NA,remove.trailing.nas=TRUE)
   tests[["t16"]]<-list(input=c("1:2:NA:NA:NA:NA","1:2:NA","1:2","1:2:4:NA"),output=c("1:2"),remove.trailing.nas=TRUE)
+  tests[["t17"]]<-list(input=c("1:2:NA:NA:NA:NA","1:2:NA","1:2:s1","1:2:4:NA","1:2:3 sp","1:2:3 12"),output=c("1:2"),remove.trailing.nas=TRUE,normalize.entries=TRUE)
+
 
   
   for ( t in names(tests)) {
