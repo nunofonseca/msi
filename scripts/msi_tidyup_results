@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# 
+set -eux -o pipefail
+
+function usage {
+    echo "msi_tidyup_results  fasta_file blast.tsv out_tsv_file taxonomy_data_directory"
+}
+
+## Produces a new tsv file with complete headers (based on the ones originally in  the fasta file (not truncated), a few extra fields (namely nreads, nbatches, and full lineage information
+
+function tidy_results {
+    fasta_file=$1
+    blast_tsv=$2
+    out_file=$3
+    
+    #pident means Percentage of identical matches
+    #nident means Number of identical matches
+    #mismatch means Number of mismatches
+    echo read nbatches nreads adapter adapter_orientation sseqid evalue bitscore pident nident mismatch qlen length sgi pid staxids ssciname scomnames stitle  | tr " " "\t" > $out_file.tmp
+
+    ## sequences in the fasta file
+    ## blast discards all characters in the header after the first space
+    grep "^>" $fasta_file | sed "s/^>//" | cut -f 1 -d\  > $out_file.tmp2
+    ##########################################
+    ## blast header has the cluster size, len
+    ## get the number of reads and nbatches
+    ## grep "^>" $fasta_file | sed -E "s/^.*:(members=.*:size=.*)$/\1/;s/:/\t/g;s/size=//g;s/members=//" 
+    sed -E "s/:adapter=.*//;s/^.*:(members=.*:size=.*)$/\1/;s/:/\t/g;s/size=//g;s/members=//"  $out_file.tmp2  > $out_file.tmp3
+    sed -E "s/no_adapter/no_adapter:/;s/.*adapter=//;s/:/\t/g;s/;$//" $out_file.tmp2 > $out_file.tmp4
+
+    paste -d  $'\t' $out_file.tmp2 $out_file.tmp3 $out_file.tmp4 | sort -u -k 1b,1 > $out_file.tmp1
+    sort -k 1b,1 $blast_tsv  > $out_file.tmp2
+    join -t $'\t' -a 1 -e X $out_file.tmp1 $out_file.tmp2  >> $out_file.tmp
+
+    #join -t\t $out_file.tmp2 $out_file.tmp1  >> $out_file.tmp
+    ############################################
+    ## add lineage information whenever possible
+    echo taxid lineage kingdom phylum class order family genus species subspecies | tr " " "\t" > $out_file.tmp3 
+    cut -f 16 $out_file.tmp | tail -n +2 | sed "s/^$/unclassified/" | taxonkit lineage --data-dir $TAXONOMY_DATA_DIR |  taxonkit reformat  --data-dir $TAXONOMY_DATA_DIR  --lineage-field 2  --format   "{k}\t{p}\t{c}\t{o}\t{f}\t{g}\t{s}\t{S}" >> $out_file.tmp3
+    paste -d "\t" $out_file.tmp $out_file.tmp3 > $out_file.tmp2
+    
+    mv $out_file.tmp2 $out_file
+    rm -f $out_file.tmp*
+}
+
+
+if [ "$4-" == "-" ]; then
+    usage
+    exit 1    
+fi
+
+TAXONOMY_DATA_DIR=$4
+tidy_results $1 $2 $3
+exit 0
