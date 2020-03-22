@@ -32,7 +32,7 @@ lca <- function(paths, threshold=1.0, sep=":",
     
     if (is.null(paths)) return(NA)
     # remove dups...  or not 
-    if (remove.dups) paths<-unique(paths)
+    if (remove.dups) paths<-paths[!duplicated(paths)]
     ## Normalize netries
     if ( normalize.entries ) {
         paths <- sapply(paths,FUN=sub,pattern=" [^:]+$",replacement="",ignore.case=TRUE)
