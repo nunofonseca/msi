@@ -83,9 +83,6 @@ for cmd in $COMMANDS_NEEDED; do
     command -v $cmd  >/dev/null 2>&1 || { echo "ERROR: $cmd  does not seem to be installed.  Aborting." >&2; exit 1; }
 done
 
-
-
-
 #taxdb.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz
 ##   ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nt.gz  (50GB)
 ## ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
@@ -134,120 +131,6 @@ function run_blast {
     mv $out.tmp $out
 }
 
-
-#######################################################################################
-MD_MIN_LENGTH=
-MD_MAX_LENGTH=
-MD_PRIMER_F=
-MD_PRIMER_R=
-MD_PRIMER_SET=
-MD_BARCODE_NAME=
-MD_TARGET_GENE=
-MD_FILE=
-MD_EXPECTED_COLS="barcode_name sample_id ss_sample_id primer_set primer_f primer_r min_length max_length target_gene"
-declare -A MD
-
-## return 0 if found/1 if not
-function file_in_metadata_file {
-
-    if [ "$1-" == "-" ]; then
-	# nothing to do
-	return
-    fi
-    if [ ! -e "$1" ]; then
-	perror "file $1 not found or not readable"
-	exit 1
-    fi
-    MD_FILE=$1
-    set +u
-    CFILE=$2
-    set -u
-    if [ $CFILE == "unclassified.fastq.gz" ] ; then
-    return $IGNORE_UNCLASSIFIED
-fi
-    set +e
-    # if CFILE/$2 is provided then look for the file in $MD_FILE
-    if [ "$CFILE-" != "-" ]; then
-	N=$( grep -E "$EXPERIMENT_ID" $MD_FILE | grep -i -c -E "(^|\s)$CFILE($|\s)")
-	if [ $N == "0" ] && [ $CFILE != "unclassified.fastq.gz" ] ; then
-	    local CFILE2=$(basename -s .fastq.gz $CFILE)
-	    N=$( grep -E "$EXPERIMENT_ID" $MD_FILE | grep -i -c -E "(^|\s)$CFILE2($|\s)")
-	    if [ $N == "0" ] && [ $CFILE != "unclassified.fastq.gz" ] ; then
-		perror "File $CFILE not found in $MD_FILE"
-		return 1
-	    fi
-	fi
-	pinfo "Found info about $N primers associated to $CFILE"
-    fi
-    set -e
-    return 0
-}
-function validate_metadata_file {
-
-    if [ "$1-" == "-" ]; then
-	# nothing to do
-	return
-    fi
-    if [ ! -e "$1" ]; then
-	perror "file $1 not found or not readable"
-	exit 1
-    fi
-    MD_FILE=$1
-    set +u
-    CFILE=$2
-    set -u
-    ## check if the expected columns are present    
-    set +e
-    for EC in $MD_EXPECTED_COLS; do
-	N=$(head -n 1 $MD_FILE| grep -i -c -E "(^|\s)$EC($|\s)")
-	if [ $N == "0" ]; then
-	    perror "Column $EC not found in $MD_FILE"
-	    exit 1
-	fi
-    done
-    set -e
-}
-
-function load_metadata {
-
-    if [ "$1-" == "-" ]; then
-	# nothing to do
-	return
-    fi
-    if [ ! -e "$1" ]; then
-	perror "file $1 not found or not readable"
-	exit 1
-    fi
-    MD_FILE=$1
-    local FILE=$2
-     # # load
-    local H=$(head -n 1 $MD_FILE|sed "s/ /_/g")
-    let i=1
-    for C in $H; do
-	set +e
-    	N=$(echo $MD_EXPECTED_COLS | grep -i -c -E "(^|\s)$C(\s|$)")
-	set -e
-    	if [ $N == 1 ]; then
-    	    ## keep col number
-    	    ## get all values of that column
-	    local C_UP=${C^^}
-	    echo $i $C $C_UP
-	    set +e
-	    x=$(grep -i -E "$EXPERIMENT_ID" $MD_FILE| grep -i -E "(^|\s)$FILE(\s|$)" |cut -f $i)
-	    set -e
-	    if [ "$x-" == "-" ]; then
-		FILE=$(basename -s .fastq.gz $FILE )
-		x=$(grep -i -E "$EXPERIMENT_ID" $MD_FILE| grep -i -E "(^|\s)$FILE(\s|$)" |cut -f $i)
-	    fi
-	    MD[$C_UP]="$x"
-    	fi
-	let i=$i+1
-    done
-    for EC in $MD_EXPECTED_COLS; do
-	local v=${EC^^}
-	echo $v=${MD[$v]}
-    done
-}
 #######################################################################################
 # 
 while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hd"  Option; do
