@@ -1,4 +1,5 @@
 #!/bin/env bash
+
 ## 2019-06-03
 set -ex
 #set -e
@@ -26,6 +27,7 @@ TAXONOMY_DATA_DIR=$MSI_DIR/db
 THREADS=2
 MAX_NUM_ITERATIONS=1000000
 
+METADATAFILE=
 LAZY=y
 #################################################
 ## commands
@@ -56,12 +58,13 @@ function perror {
 }
 
 function usage {
-    echo "xxx [ -s  -t root_dir  -p prot -d data_dir -c -X min_reads -h ] -i raw_data_toplevel_folder"
+    echo "xxx [ -s  -t root_dir  -p prot -d data_dir -c -X min_reads -h -I metadata_file] -i raw_data_toplevel_folder"
     cat <<EOF
  -i tl_dir - toplevel directory with the nanopore data. fastq files will be searched in \$tl_dir/*/fastq_pass. It is expected that the tree directory is organized as \$tl_dir/sample_name/fastq_pass.
  -m min_len    - minimum length of the reads
  -M max_len    - maximum length of the reads
  -q min_qual   - minimum quality
+ -I metadata   - metadata file*
  -C min_reads  - minimum number of reads that a cluster should have (Default=1)
  -o out_folder -  output folder
  -b blast_database - path to the blast database
@@ -70,6 +73,8 @@ function usage {
  -T min_cluster_id2- minimum cluster identity (sequences with a value greater or equal are clustered together - value between 0 and 1) 
  -t threads        - maximum number of threads
  -h  - provides usage information
+
+*metadata file: tsv file were the file name should be found in one column and the column names (first line of the file) X, Y, Z should exist.
 EOF
 }
 
@@ -169,10 +174,67 @@ function freeze_iteration_files {
     files=$*
     cp -ar $files $OUT_FOLDER/$sample_name/iterations/${CUR_ITERATION}
 }
+#######################################################################################
+MD_MIN_LEN=
+MD_MAX_LEN=
+MD_FW_SEQ=
+MD_RV_SEQ=
+MD_PRIMER_NAME=
+MD_ONAME=
+MD_FILE=
+
+
+function validate_metadata_file {
+
+    if [ "$1-" == "-" ]; then
+	# nothing to do
+	return
+    fi
+    if [ ! -e "$1" ]; then
+	perror "file $1 not found or not readable"
+	exit 1
+    fi
+    MD_FILE=$1
+    CFILE=$2
+    ## check if the expected columns are present    
+    EXPECTED_COLS="barcode_name sample_id primer_set primer_f primer_r min_length max_length target_gene"
+    set +e
+    for EC in $EXPECTED_COLS; do
+	N=$(head -n 1 $MD_FILE| grep -i -c -E "(^|\s)$EC($|\s)")
+	if [ $N == "0" ]; then
+	    perror "Column $EC not found in $MD_FILE"
+	    exit 1
+	fi
+    done
+    # if CFILE/$2 is provided then look for the file in $MD_FILE
+    if [ "$CFILE-" != "-" ]; then
+	N=$(grep -i -c -E "(^|\s)$CFILE($|\s)" $MD_FILE)
+	if [ $N == "0" ]; then
+	    perror "File $CFILE not found in $MD_FILE"
+	    exit 1
+	fi
+	pinfo "Found info about $N primers associated to $CFILE"
+    fi
+    set -e
+}
+
+    # # 
+
+    # # load
+    # local H=$(head -n 1 $MD_FILE)
+    # let i=1
+    # for C in $H; do
+    # 	N=$(echo $EXPECTED_COLS | grep -c -E "(^|\s)$C($|\s)")
+    # 	if [ $N == 1 ]; then
+    # 	    ## keep col number
+
+    # 	    ## get all values of that column
+    # 	fi
+    # done
 
 #######################################################################################
 # 
-while getopts "B:T:E:C:n:i:m:M:q:o:b:t:hd"  Option; do
+while getopts "I:B:T:E:C:n:i:m:M:q:o:b:t:hd"  Option; do
     case $Option in
 	i ) TL_DIR=$OPTARG;;
 	d ) set -x;;
@@ -184,6 +246,7 @@ while getopts "B:T:E:C:n:i:m:M:q:o:b:t:hd"  Option; do
 	M ) MAX_LEN=$OPTARG;;
 	q ) MIN_QUAL=$OPTARG;;
 	o ) OUT_FOLDER=$OPTARG;;
+	I ) METADATAFILE=$OPTARG;;
 	b ) LOCAL_BLAST_DB=$OPTARG;;
 	t ) THREADS=$OPTARG;;
 	n ) MAX_NUM_ITERATIONS=$OPTARG;;
@@ -213,8 +276,9 @@ else
     pinfo "No local blast database provided in -b. Blast queries will be performed remotely. "
 fi
 
+validate_metadata_file $METADATAFILE
 
-################################################################################3
+################################################################################
 ## start working....
 pinfo "Looking for fastq_pass folder in $TL_DIR/*/*/"
 ##set +e
@@ -285,7 +349,7 @@ function polish_sequences {
 	cat $ref >>  $representatives
     done
 }
-	
+
 function process_sample {
 
     dir=$1
