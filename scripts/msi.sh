@@ -705,7 +705,7 @@ for ddd in $FASTQ_FILES; do
 done
 gzip $rstats_file.tmp
 mv $rstats_file.tmp.gz   $rstats_file.gz
-
+pinfo "Generated $rstats_file.gz"
 ###############################
 ## 
 for ddd in $FASTQ_FILES; do
@@ -740,13 +740,10 @@ for ddd in $FASTQ_FILES; do
 done
 gzip $out_file.tmp
 gzip $out_file_fasta.tmp
-mv $out_file.tmp.gz $out_file &&mv $out_file_fasta.tmp.gz $out_file_fasta
+mv $out_file.tmp.gz $out_file
+mv $out_file_fasta.tmp.gz $out_file_fasta
+pinfo "Generated $out_file"
+pinfo "Generated $out_file_fasta"
 
 pinfo "All done."
 exit 0
-
-# #reads/#batches/%id/species
-
-grep -v "^>" xxx |while read n; do
-    if [ $prev -ne 0 ]; then
-done
