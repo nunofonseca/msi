@@ -690,6 +690,7 @@ touch $out_file.tmp
 rm -f $out_file_fasta $out_file_fasta.tmp
 touch $out_file_fasta.tmp
 
+
 ###############################
 ## stats per step - number of reads, etc
 rm -f $rstats_file
@@ -697,12 +698,13 @@ touch $rstats_file.tmp
 for ddd in $FASTQ_FILES; do
     sample_name=$(basename -s .fastq.gz $ddd )
     prefix_path=$OUT_FOLDER/$sample_name/$sample_name
-    if [ -s $rstats_file ]; then
-	head -n 1 $prefix_path.stats.1.tsv > $rstats_file.tmp	
+    if [ ! -s $rstats_file.tmp ]; then
+	head -n 1 $prefix_path.stats.1.tsv > $rstats_file.tmp
     fi
     tail -q -n +2 $prefix_path.stats.?.tsv >> $rstats_file.tmp	
 done
-mv $rstats_file.tmp   $rstats_file
+gzip $rstats_file.tmp
+mv $rstats_file.tmp.gz   $rstats_file.gz
 
 ###############################
 ## 
