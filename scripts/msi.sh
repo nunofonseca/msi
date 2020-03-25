@@ -451,8 +451,11 @@ function process_fastq {
     ##  - number of reads,min_len,max_len,quality encoding, quality encoding range
     INFO_FILE=$SAMPLE_OUT_FOLDER/$sample_name.info
     STATS_FILE1=$(get_stats_filename 1 $SAMPLE_OUT_FOLDER/$sample_name)
-    if [ ! -e $STATS_FILE1 ] || [ "$LAZY-" == "n-" ]; then
-	msi_fastq_stats.sh $fq_file raw $sample_name $INFO_FILE > $STATS_FILE1.tmp && mv $STATS_FILE1.tmp $STATS_FILE1
+    if [ -e $STATS_FILE1 ] && [ $STATS_FILE1 -nt $fq_file ] && [ "$LAZY-" == "y-" ]; then
+	pinfo "Keeping cached  $STATS_FILE1"
+    else
+	set -e
+	msi_fastq_stats.sh $fq_file raw $sample_name $INFO_FILE | grep -v "^$" > $STATS_FILE1.tmp && mv $STATS_FILE1.tmp $STATS_FILE1
     fi
 
     ###################################################
@@ -496,8 +499,10 @@ function process_fastq {
     ######################################################
     ##
     STATS_FILE2=$(get_stats_filename 2 $SAMPLE_OUT_FOLDER/$sample_name)
-    if [  -e $STATS_FILE2 ] && [ $STATS_FILE2 -nt $FQ_FILE_F1 ] &&  [ "$LAZY-" == "n-" ]; then
-	msi_fastq_stats.sh $FQ_FILE_F1 "raw_post_filter" $sample_name $INFO_FILE > $STATS_FILE2.tmp && mv $STATS_FILE2.tmp $STATS_FILE2
+    if [  -e $STATS_FILE2 ] && [ $STATS_FILE2 -nt $FQ_FILE_F1 ] &&  [ "$LAZY-" == "y-" ]; then
+	pinfo "Keeping cached  $STATS_FILE2"
+    else
+	msi_fastq_stats.sh $FQ_FILE_F1 "raw_post_filter" $sample_name $INFO_FILE  | grep -v "^$" > $STATS_FILE2.tmp && mv $STATS_FILE2.tmp $STATS_FILE2
     fi
 
     STATS_FILE3=$(get_stats_filename 3 $SAMPLE_OUT_FOLDER/$sample_name)
