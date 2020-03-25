@@ -503,7 +503,6 @@ function process_fastq {
     STATS_FILE3=$(get_stats_filename 3 $SAMPLE_OUT_FOLDER/$sample_name)
     STATS_FILE4=$(get_stats_filename 4 $SAMPLE_OUT_FOLDER/$sample_name)
 
-
     set -e
     ######################################################
     ## We may end up with no reads...
@@ -522,9 +521,9 @@ function process_fastq {
 #	return
  #   fi
     ######################################################
-    if [ ! -e $PROCESSED_FASTQS ]; then
-	touch $PROCESSED_FASTQS
-    fi
+    ##if [ ! -e $PROCESSED_FASTQS ]; then
+##	touch $PROCESSED_FASTQS
+  ##  fi
 
     ######################################################
     ## Clustering
@@ -533,7 +532,7 @@ function process_fastq {
     out2=$SAMPLE_OUT_FOLDER/$pref-isonclust
     representatives=$out2/centroids.fasta
     mkdir -p $out2
-    if [  -e  $representatives ] &&  [ "$LAZY-" == "y-" ] && [ $representatives -nt $FQ_FILE_F1 ] &&  [ "$LAZY-" == "y-" ]; then
+    if [  -e  $representatives ] &&  [ "$LAZY-" == "y-" ] && [ $representatives -nt $FQ_FILE_F1 ]; then
 	pinfo "Skipping clustering 1"
     else
 	let thr=`expr 1 + \( $nlines / 30 \)`
@@ -542,6 +541,8 @@ function process_fastq {
 	else
 	    CTHREADS=$THREADS
 	fi
+	## clean up
+	rm -rf $out2/*
 	#	    nreads=$(fastq_num_reads $FQ_FILE_F1)
 	#	    if [ $nreads -gt 1 ]; then
 	isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $CTHREADS
@@ -647,7 +648,7 @@ function process_fastq {
 
     #####################################################
     ## blast 
-    if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ ! $CENTROIDS.blast -nt $CENTROIDS ]; then
+    if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ $CENTROIDS.blast -nt $CENTROIDS ]; then
 	pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
     else
 	run_blast $CENTROIDS  $CENTROIDS.blast
@@ -656,8 +657,13 @@ function process_fastq {
     #####################################################
     ## simple tsv file with the stats from blast
     # summary file
-    msi_tidyup_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv.tmp $TAXONOMY_DATA_DIR
-    mv $CENTROIDS.tsv.tmp $CENTROIDS.tsv
+    if [ -e $CENTROIDS.tsv ] && [ $CENTROIDS.tsv -nt $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ]; then
+	pinfo "$CENTROIDS.tsv already generated...skipping it"
+    else
+	set -x
+	msi_tidyup_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv.tmp $TAXONOMY_DATA_DIR
+	mv $CENTROIDS.tsv.tmp $CENTROIDS.tsv
+    fi
 }
 
 ####################################################
@@ -729,8 +735,7 @@ gzip $out_file.tmp
 gzip $out_file_fasta.tmp
 mv $out_file.tmp.gz $out_file &&mv $out_file_fasta.tmp.gz $out_file_fasta
 
-
-
+pinfo "All done."
 exit 0
 
 # #reads/#batches/%id/species
