@@ -23,8 +23,10 @@ PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 ## load shell functions
 source $PATH2SCRIPT/msi_shared.sh
 
+PATH=$PATH:$PATH2SCRIPT/
+
 ## 2019-06-03
-set -eux
+set -eu
 #set -e
 set -o pipefail
 # perform some checks on the fastq files and performs incremental analysis
@@ -90,7 +92,7 @@ done
 #
 
 function usage {
-    echo "msi [ -s  -t root_dir  -p prot -d data_dir -c -X min_reads -h -I metadata_file -c param_file] -i raw_data_toplevel_folder"
+    echo "msi.sh [ -s  -t root_dir  -V  -p prot -d data_dir -c -X min_reads -h -I metadata_file -c param_file] -i raw_data_toplevel_folder"
     cat <<EOF
  -i tl_dir - toplevel directory with the nanopore data. fastq files will be searched in \$tl_dir/*.fastq.gz. It is expected one file per library/barcode.
  -m min_len    - minimum length of the reads
@@ -105,6 +107,7 @@ function usage {
  -T min_cluster_id2- minimum cluster identity (sequences with a value greater or equal are clustered together - value between 0 and 1) 
  -t threads        - maximum number of threads
  -c param_file      - file with default parameters values (overrides values passed in the command line)
+ -V                 - increase verbosity
  -h  - provides usage information
 
 *metadata file: tsv file were the file name should be found in one column and the column names (first line of the file) X, Y, Z should exist.
@@ -133,7 +136,7 @@ function run_blast {
 
 #######################################################################################
 # 
-while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hd"  Option; do
+while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hdV"  Option; do
     case $Option in
 	i ) TL_DIR=$OPTARG;;
 	d ) set -x;;
@@ -149,6 +152,7 @@ while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hd"  Option; do
 	o ) OUT_FOLDER=$OPTARG;;
 	I ) METADATAFILE=$OPTARG;;
 	b ) LOCAL_BLAST_DB=$OPTARG;;
+	V ) set -x;;
 	t ) THREADS=$OPTARG;;
 	h) usage; exit;;
     esac
@@ -219,7 +223,6 @@ set +e
 for ddd in $FASTQ_FILES; do
     $(file_in_metadata_file $METADATAFILE $(basename $ddd))
     D=$?
-    echo "$(basename $ddd) -- $D"
     if [ $D == 0 ]; then
 	FASTQ_FILES2="$FASTQ_FILES2 $ddd"
     fi
@@ -374,6 +377,43 @@ function remove_split_by_primer {
     echo $adapters_outfile
 }
 
+##
+function fasta_stats_file {
+    set +e
+    local fasta_file=$1
+    local fastq_stats_file=$2
+    local sample_name=$3
+    local note=$4
+    if [  -e  $fasta_file ]; then
+       local NR=$(grep -c "^>" $fasta_file)
+
+    else
+	local NR=0
+    fi
+    set -e
+    echo "id note num_reads" | sed "s/ /\t/g"  >  $fastq_stats_file
+    echo "$sample_name $note $NR "| sed "s/ /\t/g" >> $fastq_stats_file
+}
+
+function num_reads_in_centroids_stats_file {
+    set +e
+    local centroids_file=$1
+    local stats_file=$2
+    local sample_name=$3
+    local note=$4
+    if [  -e  $centroids_file ]; then
+	local NR=$(grep "size=" $centroids_file|sed -E "s/.*size=([0-9]+):.*/\1/"|awk '{s+=$1} END {print s}')
+	if [ "$NR-" == "-" ]; then
+	    NR=0
+	fi
+    else
+	local NR=0
+    fi
+    set -e
+    echo "id note num_reads" | sed "s/ /\t/g"  >  $stats_file
+    echo "$sample_name $note $NR "| sed "s/ /\t/g" >> $stats_file
+}
+
 ## Creates one folder per sample
 function process_fastq {
 
@@ -393,7 +433,8 @@ function process_fastq {
     CENTROIDS1=$OUT_FOLDER/$sample_name/$sample_name.centroids.withprimers.fasta
     CENTROIDS=$OUT_FOLDER/$sample_name/$sample_name.centroids.fasta
     
-    ##
+    ##################################################
+    ## File is ignored if is not in the metadata table
     if [ "$md_file-" != "-" ]; then
 	set +e
 	file_in_metadata_file $METADATAFILE $(basename $fq_file)
@@ -404,34 +445,21 @@ function process_fastq {
 	set -e
     fi
 
+    ###################################################
+    ## 
+    ## validate the fastq file and get some stats
+    ##  - number of reads,min_len,max_len,quality encoding, quality encoding range
+    INFO_FILE=$SAMPLE_OUT_FOLDER/$sample_name.info
+    STATS_FILE1=$(get_stats_filename 1 $SAMPLE_OUT_FOLDER/$sample_name)
+    if [ ! -e $STATS_FILE1 ] || [ "$LAZY-" == "n-" ]; then
+	msi_fastq_stats.sh $fq_file raw $sample_name $INFO_FILE > $STATS_FILE1.tmp && mv $STATS_FILE1.tmp $STATS_FILE1
+    fi
 
-    if [ -e $CENTROIDS.tsv ] && [ "$LAZY-" == "y-" ]; then
-	echo "skipping processing of $sample_name ($CENTROIDS.tsv already created)"
-	return
-    fi
-    if [ ! -e $PROCESSED_FASTQS ]; then
-	touch $PROCESSED_FASTQS
-    fi
-
+    ###################################################
     ##
-    num_fastq_files=0
     ##
-    set +e
-    #ll=$(grep -s  $fq_file $PROCESSED_FASTQS)
-    #set -e
-    #if [ "$ll-" != "-" ] && [ "$LAZY-" == "y-" ]; then
-    # pinfo "Skipping $sample_name:$fq_file"
-    #return
-    #fi
-    ##
-    ## validate the fastq file
-    INFO_FILE=$SAMPLE_OUT_FOLDER/$fq_file.info
-    if [  -e $INFO_FILE ] && [ "$LAZY-" == "y-" ]; then
-	$FASTQ_INFO_CMD $fq_file 2> $INFO_FILE
-    else
-	pinfo "Skipping FASTQ validation for $fq_file"
-    fi
     ## qc
+    set +e
     QC0=$SAMPLE_OUT_FOLDER/qc/raw
     QC1=$SAMPLE_OUT_FOLDER/qc/f1
     mkdir -p $QC0
@@ -439,46 +467,80 @@ function process_fastq {
     pref=$sample_name
     FQ_FILE_F1=$SAMPLE_OUT_FOLDER/$pref.f1.fastq.gz
 
-    if [  -e $QC0/$sample_name.qc_done ] && [ "$LAZY-" == "y-" ]; then
+    FQC_REPORT0=$QC0/$(basename $fq_file .fastq.gz)_fastqc.html
+    FQC_REPORT1=$QC1/$(basename $fq_file .fastq.gz).f1_fastqc.html
+    if [ -e $FQC_REPORT0 ]  && [ $FQC_REPORT0 -nt $fq_file ] && [ "$LAZY-" == "y-" ]; then
 	pinfo "QC report already generated"
     else
 	$FASTQ_QC_CMD -o $QC0 -f fastq $fq_file
-	touch $QC0/$sample_name.qc_done
-	
+	touch $QC0/$sample_name.qc_done	
     fi
+
+    ######################################################
     ## filter by fragment length and quality
-    if [  -e $FQ_FILE_F1 ]  && [ "$LAZY-" == "y-" ]; then
+    if [ -e $FQ_FILE_F1 ]  && [ $FQ_FILE_F1 -nt $fq_file ] && [ "$LAZY-" == "y-" ]; then
 	pinfo "Skipping generation of $FQ_FILE_F1"
     else
 	$CUTA_CMD -q $MIN_QUAL,$MIN_QUAL  -m $MIN_LEN -M $MAX_LEN -o $FQ_FILE_F1 $fq_file
     fi
-    if [ -e $QC1/$sample_name.qc_done ] &&  [ "$LAZY-" == "y-" ]; then
-	pinfo "QC report already generated"
+
+    ######################################################
+    ##
+    if [ -e $FQC_REPORT1 ] && [ $FQC_REPORT1 -nt $FQ_FILE_F1 ] && [ "$LAZY-" == "y-" ]; then
+	pinfo "QC report 2 already generated"
     else
 	$FASTQ_QC_CMD -o $QC1 -f fastq $FQ_FILE_F1
 	touch $QC1/$sample_name.qc_done
-	
     fi
+
+    ######################################################
+    ##
+    STATS_FILE2=$(get_stats_filename 2 $SAMPLE_OUT_FOLDER/$sample_name)
+    if [  -e $STATS_FILE2 ] && [ $STATS_FILE2 -nt $FQ_FILE_F1 ] &&  [ "$LAZY-" == "n-" ]; then
+	msi_fastq_stats.sh $FQ_FILE_F1 "raw_post_filter" $sample_name $INFO_FILE > $STATS_FILE2.tmp && mv $STATS_FILE2.tmp $STATS_FILE2
+    fi
+
+    STATS_FILE3=$(get_stats_filename 3 $SAMPLE_OUT_FOLDER/$sample_name)
+    STATS_FILE4=$(get_stats_filename 4 $SAMPLE_OUT_FOLDER/$sample_name)
+
+
+    set -e
+    ######################################################
     ## We may end up with no reads...
     nlines=$(zcat $FQ_FILE_F1|wc -l)
     if [ "$nlines-" == "0-" ]; then
 	pinfo "Skipping $sample_name:$fq_file - no reads after QC"
 	process_fastq_no_results $CENTROIDS
+	fasta_stats_file $CENTROIDS $STATS_FILE3 $sample_name "polished_reads"
+	num_reads_in_centroids_stats_file $CENTROIDS $STATS_FILE4 $sample_name "total_num_reads_in_centroids"
 	return
     fi
+    
+
+#   if [ -e $CENTROIDS.tsv ] && [ "$LAZY-" == "y-" ]; then
+#	echo "skipping processing of $sample_name ($CENTROIDS.tsv already created)"
+#	return
+ #   fi
+    ######################################################
+    if [ ! -e $PROCESSED_FASTQS ]; then
+	touch $PROCESSED_FASTQS
+    fi
+
+    ######################################################
+    ## Clustering
     ##
     ## try to keep it fast
     out2=$SAMPLE_OUT_FOLDER/$pref-isonclust
     representatives=$out2/centroids.fasta
     mkdir -p $out2
-    if [  -e $out2/final_clusters.csv ] &&  [ "$LAZY-" == "y-" ]; then
-	pinfo "Skipping clustering"
+    if [  -e  $representatives ] &&  [ "$LAZY-" == "y-" ] && [ $representatives -nt $FQ_FILE_F1 ] &&  [ "$LAZY-" == "y-" ]; then
+	pinfo "Skipping clustering 1"
     else
 	let thr=`expr 1 + \( $nlines / 30 \)`
 	if [ $thr -le  $THREADS ]; then
 	    CTHREADS=1
-	    else
-		CTHREADS=$THREADS
+	else
+	    CTHREADS=$THREADS
 	fi
 	#	    nreads=$(fastq_num_reads $FQ_FILE_F1)
 	#	    if [ $nreads -gt 1 ]; then
@@ -488,21 +550,27 @@ function process_fastq {
 	    cut -f 1 $out2/final_clusters.csv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
 	    polish_sequences $representatives $out2
 	    #ls -l $representatives
-	    echo $fq_file $representatives >> $PROCESSED_FASTQS
+	    #echo $fq_file $representatives >> $PROCESSED_FASTQS
 	else
 	    echo "isONclust did not generate $out2/final_clusters.csv "
 	    exit 3
 	fi
     fi
-    
-    if [ "$(wc -l $PROCESSED_FASTQS|cut -f 1 -d\ )-" == "0-" ]; then
-	process_fastq_no_results $CENTROIDS
-	return
-    fi
+    # deprecated
+    #if [ "$(wc -l $PROCESSED_FASTQS|cut -f 1 -d\ )-" == "0-" ]; then
+    #process_fastq_no_results $CENTROIDS
+    #fasta_stats_file $CENTROIDS $STATS_FILE3 $sample_name "polished_reads"
+    #num_reads_in_centroids_stats_file $CENTROIDS $STATS_FILE4 $sample_name "total_num_reads_in_centroids"
+    #return
+    #fi
+
     ## final file
-    cat `cut -f 2 -d\  $PROCESSED_FASTQS |sort -u` > $CENTROIDS1.tmp
-    
-    if [ ! -e  $CENTROIDS1 ] || [ $PROCESSED_FASTQS -nt $CENTROIDS1 ]; then
+    #cat `cut -f 2 -d\  $PROCESSED_FASTQS |tail -n 1` > $CENTROIDS1.tmp
+    cat $representatives > $CENTROIDS1.tmp
+
+    if [ -e  $CENTROIDS1 ] && [ $CENTROIDS1 -nt $representatives ] && [ "$LAZY-" == "y-" ]; then
+	pinfo "Skipping clustering 2"
+    else
 	## recluster
 	## -M unlimited memory
 	cd-hit-est  -i $CENTROIDS1.tmp -o $CENTROIDS1-cdhit  -c $CD_HIT_CLUSTER_THRESHOLD -M 0 -T $THREADS  -g 1 -G 1 -d 0
@@ -526,34 +594,58 @@ function process_fastq {
 	    mv $CENTROIDS1.tmp5 $CENTROIDS1
 	fi
     fi
+
     NC=`wc -l $CENTROIDS1| cut -f 1 -d\ `
     if [ $NC -eq 0 ]; then
 	## empty fasta file
 	process_fastq_no_results $CENTROIDS
+	fasta_stats_file $CENTROIDS $STATS_FILE3 $sample_name "polished_reads"
+	num_reads_in_centroids_stats_file $CENTROIDS $STATS_FILE4 $sample_name "total_num_reads_in_centroids"
 	return
 	#touch $CENTROIDS.tsv
 	#touch $CENTROIDS.blast
     fi
-    ##
+
+    ############################################################
+    ## Trim adapters and filter by length
+    ## keep adapers in FASTA header
     if [ "$md_file-" != "-" ]; then
-	load_metadata $METADATAFILE $(basename $fq_file)
-	if [ "${MD[PRIMER_SET]^^}-" == "NONE-" ]; then
-	    pinfo "No primers for $fq_file"
-	    sed  -E "s/size=(.*)$/\1/;s/$/:adapter=none:/" $CENTROIDS1 > $CENTROIDS
+	if [ -e $CENTROIDS ] && [ $CENTROIDS -nt $CENTROIDS1 ] &&  [ "$LAZY-" == "y-" ]; then
+	    pinfo "skipping trimming adapaters and filter by length (already done)"
 	else
-	    pinfo "Call cutadapter"
-	    # 2.run cut adaptor
-	    #   2.1 one single primer - we get one single file
-	    #   2.2 multiple primerrs - we get multiple files	    
-	    new_file=$(remove_split_by_primer $fq_file $CENTROIDS1)
-	    # filter by length
-	    $CUTA_CMD -m $MIN_LEN -M $MAX_LEN -o $new_file.tmp $new_file
-	    # rename files
-	    mv $new_file.tmp $CENTROIDS
-	    rm -f $new_file
+	    load_metadata $METADATAFILE $(basename $fq_file)
+	    if [ "${MD[PRIMER_SET]^^}-" == "NONE-" ]; then
+		pinfo "No primers for $fq_file"
+		sed  -E "s/size=(.*)$/\1/;s/$/:adapter=none:/" $CENTROIDS1 > $CENTROIDS
+	    else
+		pinfo "Calling cutadapter"
+		# 2.run cut adaptor
+		#   2.1 one single primer - we get one single file
+		#   2.2 multiple primerrs - we get multiple files	    
+		new_file=$(remove_split_by_primer $fq_file $CENTROIDS1)
+		# filter by length (min and max defined for all samples)
+		$CUTA_CMD -m $MIN_LEN -M $MAX_LEN -o $new_file.tmp $new_file
+		# rename files
+		mv $new_file.tmp $CENTROIDS
+		rm -f $new_file
+	    fi
 	fi
     fi
 
+    #####################################################
+    ## generat the stats file
+    if [ -e $STATS_FILE3 ] && [ $STATS_FILE3 -nt $CENTROIDS ] &&  [ "$LAZY-" == "y-" ]; then
+	pinfo "Skipping generation of $STATS_FILE3"
+    else
+	fasta_stats_file $CENTROIDS $STATS_FILE3 $sample_name "polished_reads"
+    fi
+    if [ -e $STATS_FILE4 ] && [ $STATS_FILE4 -nt $CENTROIDS ] &&  [ "$LAZY-" == "y-" ]; then
+	pinfo "Skipping generation of $STATS_FILE4"
+    else
+	num_reads_in_centroids_stats_file $CENTROIDS $STATS_FILE4 $sample_name "total_num_reads_in_centroids"	
+    fi
+
+    #####################################################
     ## blast 
     if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ ! $CENTROIDS.blast -nt $CENTROIDS ]; then
 	pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
@@ -561,22 +653,25 @@ function process_fastq {
 	run_blast $CENTROIDS  $CENTROIDS.blast
     fi
     ## blat??
-    ##
+    #####################################################
     ## simple tsv file with the stats from blast
     # summary file
     msi_tidyup_results $CENTROIDS $CENTROIDS.blast $CENTROIDS.tsv.tmp $TAXONOMY_DATA_DIR
     mv $CENTROIDS.tsv.tmp $CENTROIDS.tsv
 }
 
-## each top level directory corresponds to a sample
+####################################################
+## Process each fastq_file
 for ddd in $FASTQ_FILES; do
     process_fastq $ddd "$METADATAFILE"
 done
 
+set -e 
 ## Generate a single file with all results
 ### First add the sample name as a column before merging the files
 out_file=$OUT_FOLDER/results.tsv.gz
 out_file_fasta=${out_file//.tsv.gz/.fasta.gz}
+rstats_file=$OUT_FOLDER/running.stats.tsv
 
 rm -f $out_file $out_file.tmp
 touch $out_file.tmp
@@ -584,6 +679,22 @@ touch $out_file.tmp
 rm -f $out_file_fasta $out_file_fasta.tmp
 touch $out_file_fasta.tmp
 
+###############################
+## stats per step - number of reads, etc
+rm -f $rstats_file
+touch $rstats_file.tmp 
+for ddd in $FASTQ_FILES; do
+    sample_name=$(basename -s .fastq.gz $ddd )
+    prefix_path=$OUT_FOLDER/$sample_name/$sample_name
+    if [ -s $rstats_file ]; then
+	head -n 1 $prefix_path.stats.1.tsv > $rstats_file.tmp	
+    fi
+    tail -q -n +2 $prefix_path.stats.?.tsv >> $rstats_file.tmp	
+done
+mv $rstats_file.tmp   $rstats_file
+
+###############################
+## 
 for ddd in $FASTQ_FILES; do
     sample_name=$(basename -s .fastq.gz $ddd )
     f=$OUT_FOLDER/$sample_name/$sample_name.centroids.fasta.tsv
