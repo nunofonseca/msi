@@ -32,6 +32,10 @@ function pinfo {
     echo "==INFO: $*" 1>&2
 }
 
+function pwarn {
+    echo "==WARNING: $*" 1>&2
+}
+
 function perror {
     echo "==ERROR: $*"  1>&2
 }
@@ -95,7 +99,7 @@ fi
 	    local CFILE2=$(basename -s .fastq.gz $CFILE)
 	    N=$( grep -E "$EXPERIMENT_ID" $MD_FILE | grep -i -c -E "(^|\s)$CFILE2($|\s)")
 	    if [ $N == "0" ] && [ $CFILE != "unclassified.fastq.gz" ] ; then
-		perror "File $CFILE not found in $MD_FILE"
+		pwarn "File $CFILE not found in $MD_FILE"
 		return 1
 	    fi
 	fi
