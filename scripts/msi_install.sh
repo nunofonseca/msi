@@ -21,7 +21,7 @@ isONclust_VERSION=0.0.4
 blast_VERSION=2.9.0
 blast_URL=ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-${blast_VERSION}+-x64-linux.tar.gz
 
-fastq_utils_VERSION=0.19.3
+fastq_utils_VERSION=0.23.0
 fastq_utils_URL=https://github.com/nunofonseca/fastq_utils/archive/$fastq_utils_VERSION.tar.gz
 
 FASTQC_VERSION=0.11.8
