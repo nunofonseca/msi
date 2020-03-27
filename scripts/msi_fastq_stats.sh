@@ -54,17 +54,30 @@ if [ "$fastq_info_file-" == "-" ]; then
     fastq_info_file=$fastq_file.info
 fi
 
-if [ -e $fastq_info_file ] &&  [  $fastq_info_file -nt $fastq_file ]; then
-    echo "skipping running fastq_info" >&2
-else
-    $FASTQ_INFO_CMD $fastq_file 2> $fastq_info_file
-fi
+#if [ -e $fastq_info_file ] &&  [  $fastq_info_file -nt $fastq_file ]; then
+#    echo "skipping running fastq_info" >&2
+#else
+set +e
+$FASTQ_INFO_CMD -q -e -r $fastq_file 2> $fastq_info_file
+
+#fi
 
 nreads=$(grep "Number of reads:" $fastq_info_file | cut -f 2 -d:|tr -d " ")
 qual_enc=$(grep "Quality encoding: " $fastq_info_file | cut -f 2 -d:|sed "s/^\s//")
+if [ "$qual_enc-" == "-" ]; then
+    qual_enc=NA
+fi
 qual_enc_range=$(grep "Quality encoding range: " $fastq_info_file | cut -f 2 -d:|sed "s/^\s//")
-read_len=$(grep "Read length: " $fastq_info_file | cut -f 2 -d:|sed "s/^\s//")
 
+if [ "$qual_enc_range-" == "-" ]; then
+    qual_enc_range="NA NA"
+fi
+read_len=$(grep "Read length: " $fastq_info_file | cut -f 2 -d:|sed "s/^\s//")
+if [ "$read_len-" == "-" ]; then
+    read_len="NA NA NA"
+fi
+## TODO: REMOVE- it should not get to this point if it fails
+set -e
 echo "id note nreads quality_encoding quality_enc_min quality_enc_max read_len_min read_len_max read_len_avg" | sed "s/ /\t/g" 
 echo "$sample_name $note $nreads $qual_enc $qual_enc_range $read_len"  | sed "s/ /\t/g" 
 
