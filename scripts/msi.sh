@@ -659,7 +659,7 @@ function process_fastq {
     if [ $SKIP_BLAST == "Y" ]; then
 	# finish here
 	pinfo "Skipping blast as requested"
-	exit 0
+	return
     fi
     if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ $CENTROIDS.blast -nt $CENTROIDS ]; then
 	pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
@@ -684,6 +684,11 @@ function process_fastq {
 for ddd in $FASTQ_FILES; do
     process_fastq $ddd "$METADATAFILE"
 done
+
+if [ $SKIP_BLAST == "Y" ]; then
+    # finish here
+    exit 0
+fi
 
 set -e 
 ## Generate a single file with all results
