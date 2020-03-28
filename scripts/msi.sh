@@ -47,6 +47,8 @@ CD_HIT_CLUSTER_THRESHOLD=0.99
 MIN_ID=70
 EVALUE=0.001
 CONF_FILE=
+GEN_FASTQC_REPORT="N"
+SKIP_BLAST="N"
 IGNORE_UNCLASSIFIED=0 ;## process (1) or not (0) the file with unclassified reads (no barcodes)
 ## minimum number of reads that a cluster must have to  pass the classification step (blastnig)
 CLUSTER_MIN_READS=1
@@ -92,7 +94,7 @@ done
 #
 
 function usage {
-    echo "msi.sh [ -s  -t root_dir  -V  -p prot -d data_dir -c -X min_reads -h -I metadata_file -c param_file] -i raw_data_toplevel_folder"
+    echo "msi.sh [ -s  -t root_dir  -V -r  -p prot -d data_dir -c -X min_reads -h -I metadata_file -c param_file] -i raw_data_toplevel_folder"
     cat <<EOF
  -i tl_dir - toplevel directory with the nanopore data. fastq files will be searched in \$tl_dir/*.fastq.gz. It is expected one file per library/barcode.
  -m min_len    - minimum length of the reads
@@ -107,6 +109,8 @@ function usage {
  -T min_cluster_id2- minimum cluster identity (sequences with a value greater or equal are clustered together - value between 0 and 1) 
  -t threads        - maximum number of threads
  -c param_file      - file with default parameters values (overrides values passed in the command line)
+ -r                 - run fastqc to generate qc reports for the fastq files
+ -S                 - stop execution before running blast
  -V                 - increase verbosity
  -h  - provides usage information
 
@@ -136,7 +140,7 @@ function run_blast {
 
 #######################################################################################
 # 
-while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hdV"  Option; do
+while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hdrSV"  Option; do
     case $Option in
 	i ) TL_DIR=$OPTARG;;
 	d ) set -x;;
@@ -151,7 +155,9 @@ while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hdV"  Option; do
 	q ) MIN_QUAL=$OPTARG;;
 	o ) OUT_FOLDER=$OPTARG;;
 	I ) METADATAFILE=$OPTARG;;
+	r ) GEN_FASTQC_REPORT="Y";;
 	b ) LOCAL_BLAST_DB=$OPTARG;;
+	S ) SKIP_BLAST="Y";;
 	V ) set -x;;
 	t ) THREADS=$OPTARG;;
 	h) usage; exit;;
@@ -238,7 +244,10 @@ pinfo "Found $NFILES fastq.gz files in $FASTQ_DIRS and in $METADATAFILE."
 pinfo "Ouput folder: $OUT_FOLDER"
 mkdir -p $OUT_FOLDER
 
-LOGFILE=$OUT_FOLDER/time_mem_log.tsv
+
+## Record the time and memory needed to process  the data
+##LOGFILE=$OUT_FOLDER/time_mem_log.tsv
+
 
 # arg:
 # 1-level (1,2,3,...)
@@ -470,13 +479,15 @@ function process_fastq {
     pref=$sample_name
     FQ_FILE_F1=$SAMPLE_OUT_FOLDER/$pref.f1.fastq.gz
 
-    FQC_REPORT0=$QC0/$(basename $fq_file .fastq.gz)_fastqc.html
-    FQC_REPORT1=$QC1/$(basename $fq_file .fastq.gz).f1_fastqc.html
-    if [ -e $FQC_REPORT0 ]  && [ $FQC_REPORT0 -nt $fq_file ] && [ "$LAZY-" == "y-" ]; then
-	pinfo "QC report already generated"
-    else
-	$FASTQ_QC_CMD -o $QC0 -f fastq $fq_file
-	touch $QC0/$sample_name.qc_done	
+    if [ $GEN_FASTQC_REPORT == "Y" ]; then
+	FQC_REPORT0=$QC0/$(basename $fq_file .fastq.gz)_fastqc.html
+	FQC_REPORT1=$QC1/$(basename $fq_file .fastq.gz).f1_fastqc.html
+	if [ -e $FQC_REPORT0 ]  && [ $FQC_REPORT0 -nt $fq_file ] && [ "$LAZY-" == "y-" ]; then
+	    pinfo "QC report already generated"
+	else
+	    $FASTQ_QC_CMD -o $QC0 -f fastq $fq_file
+	    touch $QC0/$sample_name.qc_done	
+	fi
     fi
 
     ######################################################
@@ -489,11 +500,13 @@ function process_fastq {
 
     ######################################################
     ##
-    if [ -e $FQC_REPORT1 ] && [ $FQC_REPORT1 -nt $FQ_FILE_F1 ] && [ "$LAZY-" == "y-" ]; then
-	pinfo "QC report 2 already generated"
-    else
-	$FASTQ_QC_CMD -o $QC1 -f fastq $FQ_FILE_F1
-	touch $QC1/$sample_name.qc_done
+    if [ $GEN_FASTQC_REPORT == "Y" ]; then
+	if [ -e $FQC_REPORT1 ] && [ $FQC_REPORT1 -nt $FQ_FILE_F1 ] && [ "$LAZY-" == "y-" ]; then
+	    pinfo "QC report 2 already generated"
+	else
+	    $FASTQ_QC_CMD -o $QC1 -f fastq $FQ_FILE_F1
+	    touch $QC1/$sample_name.qc_done
+	fi
     fi
 
     ######################################################
@@ -519,16 +532,6 @@ function process_fastq {
 	num_reads_in_centroids_stats_file $CENTROIDS $STATS_FILE4 $sample_name "total_num_reads_in_centroids"
 	return
     fi
-    
-
-#   if [ -e $CENTROIDS.tsv ] && [ "$LAZY-" == "y-" ]; then
-#	echo "skipping processing of $sample_name ($CENTROIDS.tsv already created)"
-#	return
- #   fi
-    ######################################################
-    ##if [ ! -e $PROCESSED_FASTQS ]; then
-##	touch $PROCESSED_FASTQS
-  ##  fi
 
     ######################################################
     ## Clustering
@@ -652,7 +655,12 @@ function process_fastq {
     fi
 
     #####################################################
-    ## blast 
+    ## blast
+    if [ $SKIP_BLAST == "Y" ]; then
+	# finish here
+	pinfo "Skipping blast as requested"
+	exit 0
+    fi
     if [ -e $CENTROIDS.blast ] && [ "$LAZY-" == "y-" ] && [ $CENTROIDS.blast -nt $CENTROIDS ]; then
 	pinfo "Skipping Blast - file $CENTROIDS.blast already exists"
     else
