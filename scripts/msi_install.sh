@@ -18,7 +18,7 @@ ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon c
 cutadapt_VERSION=2.7
 isONclust_VERSION=0.0.4
 
-blast_VERSION=2.9.0
+blast_VERSION=2.10.0
 blast_URL=ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-${blast_VERSION}+-x64-linux.tar.gz
 
 fastq_utils_VERSION=0.23.0
