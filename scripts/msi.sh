@@ -164,6 +164,18 @@ while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hdrSV"  Option; do
     esac
 done
 
+if [ "$CONF_FILE-" != "-" ]; then
+    if [ ! -e $CONF_FILE ]; then
+	perror "$CONF_FILE not found or not readable"
+	exit 1
+    fi
+    pinfo "Loading $CONF_FILE..."
+    set +u
+    source $CONF_FILE
+    set -u
+    pinfo "Loading $CONF_FILE...done."
+fi
+
 ## Check and validate arguments
 if [ "$TL_DIR-" == "-" ]; then
     perror "no value given to parameter -i"
@@ -178,8 +190,8 @@ fi
 
 
 if [ "$LOCAL_BLAST_DB-" != "-" ]; then
-    if [ ! -e $LOCAL_BLAST_DB.nal ]; then
-	perror "Blast database '$LOCAL_BLAST_DB.nal' not found or not readable"
+    if [ ! -e $LOCAL_BLAST_DB.ndb ]; then
+	perror "Blast database $LOCAL_BLAST_DB.ndb not found or not readable"
 	exit 1
     fi
 else
@@ -187,17 +199,6 @@ else
 fi
 
 
-if [ "$CONF_FILE-" != "-" ]; then
-    if [ ! -e $CONF_FILE ]; then
-	perror "$CONF_FILE not found or not readable"
-	exit 1
-    fi
-    pinfo "Loading $CONF_FILE..."
-    set +u
-    source $CONF_FILE
-    set -u
-    pinfo "Loading $CONF_FILE...done."
-fi
 
 if [ "$METADATAFILE-" != "-" ]; then
     validate_metadata_file $METADATAFILE
