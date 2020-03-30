@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# =========================================================
+# Copyright 2019-2020,  Nuno A. Fonseca (nuno dot fonseca at gmail dot com)
+#
+#
+# This is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this file.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# =========================================================
+
+set -e
+# label (first column in the log file)
+label=$1
+# where to write the stats
+logfile=$2
+shift 2
+
+datetime=`date "+%F %R"`
+d=`dirname $logfile`
+   
+fff=$(mktemp -p $d --tmpdir ./XXXX)
+sout=$fff.$label.out
+serr=$fff.$label.err
+
+#echo `pwd`
+#echo "CMD: $*" > /dev/stderr
+# Redirect stderr and stdout to a file
+# `W'
+#     Number of times the process was swapped out of main memory (KB)
+#`I'
+#     Number of file system inputs by the process.
+#`O'
+#     Number of file system outputs by the process.
+# label\tTime elapsed\tTime leapsed(Seconds)\taximum resident set size\tcommand\t exit status
+# label |Time elapsed |Time elapsed(Seconds)| maximum resident memory |date|command\t | exit status | ....
+# ensure that folder exists
+mkdir -p $(dirname $logfile)
+if [ ! -e $logfile ] || [ ! -s $logfile ] ; then
+    ## initialize log file
+    echo 'label |Time elapsed |Time elapsed(Seconds)| maximum resident memory |date|command | exit status | System inputs| system outputs| Times Swapped' | tr "|" "\t" > $logfile
+fi
+set +e
+/usr/bin/time -q -o $logfile -a --format "$label\t%E\t%e\t%M\t$datetime\t$*\t%x\t%I\t%O\t%W" bash -c "$*" 2> >(tee -a $serr >&2)
+EXIT_STATUS=$?
+# output stderr
+#cat $sout >/dev/stdout
+#cat $serr  1>&2
+set -e
+
+if [ $EXIT_STATUS -ne 0 ]; then
+    rm -f $sout $serr
+    exit $EXIT_STATUS
+else
+    rm -f $sout $serr
+fi
+exit $EXIT_STATUS
