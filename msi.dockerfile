@@ -19,3 +19,10 @@ WORKDIR /opt
 RUN git clone git@github.com:nunofonseca/msi.git
 WORKDIR /opt/msi
 RUN ./scripts/msi_install.sh -i /opt/msi_install
+
+## wrapper to msi
+RUN echo '#!/usr/bin/env bash' > /usr/bin/msi
+RUN echo 'source /opt/msi_install/msi_env.sh' >> /usr/bin/msi
+RUN echo '/opt/msi_install/bin/msi.sh "$@"' >> /usr/bin/msi
+RUN chmod u+x /usr/bin/msi
+
