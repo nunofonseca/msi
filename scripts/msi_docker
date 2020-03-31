@@ -1,0 +1,36 @@
+#!/bin/env  bash
+# =========================================================
+# Copyright 2020,  Nuno A. Fonseca (nuno dot fonseca at gmail dot com)
+#
+#
+# This is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License.
+# If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# =========================================================
+# run msi in a docker image
+set -e -o pipefail
+ARGS=$*
+
+## look for the latest image
+MSI_DOCKER_IMAGE=$(docker images | grep "msi/.*\slatest"|sed -E "s/\s+/\t/g"|cut -f 3)
+if [ "$MSI_DOCKER_IMAGE-" == "-" ]; then
+    echo "ERROR: MSI_DOCKER_IMAGE not found"
+    exit 1
+fi
+# set the correct permission in SELINUX in order to be able to access the current folder in the container
+#chcon -Rt svirt_sandbox_file_t $PWD
+echo "INFO: running MSI in a docker container ($MSI_DOCKER_IMAGE)"
+docker run -v `pwd`:/msi_wd  --workdir /msi_wd --init -i -t $MSI_DOCKER_IMAGE msi "$@"
+
+exit 0
