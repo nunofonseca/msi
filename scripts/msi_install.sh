@@ -1,9 +1,26 @@
 #!/usr/bin/env bash
+# =========================================================
+# Copyright 2019-2020,  Nuno A. Fonseca (nuno dot fonseca at gmail dot com)
+#
+#
+# This is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this file.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# =========================================================
 
+PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 
-
-
-#########################################################
 ## OS tools
 SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
 
@@ -342,6 +359,15 @@ function install_all {
     done
 }
 
+function msi_to_docker {
+    MSI_VERSION=$(grep MSI_VERSION= $PATH2SCRIPT/msi.sh|cut -f 2 -d=)
+    set -e
+    echo "Generating docker image with MSI...this may take a while"
+    pushd $PATH2SCRIPT/..
+    docker build -f msi.dockerfile -t "msi/$MSI_VERSION" .
+    exit 0
+}
+
 ## default installation folder
 INSTALL_DIR=$PWD/msi
 set +eux
@@ -354,12 +380,13 @@ fi
 MODE=all
 DEBUG=0
 set +u
-while getopts "i:x:hH"  Option
+while getopts "i:x:hHDd"  Option
 do
     case $Option in
 	i) INSTALL_DIR=$OPTARG;;
 	x) MODE=$OPTARG;;
 	d) DEBUG=1;;
+	D) msi_to_docker;;
 	h ) usage; exit;;
 	H ) usage; exit;;
     esac
