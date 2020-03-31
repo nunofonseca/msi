@@ -7,7 +7,7 @@
 ## OS tools
 SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
 
-SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python-devel"
+SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python3-devel"
 
 ## TOOLS
 ALL_SOFT="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db blast_db_slow blast_db msi"
