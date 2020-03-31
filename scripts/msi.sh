@@ -19,6 +19,7 @@
 #
 # =========================================================
 
+MSI_VERSION=0.0.1
 PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 ## load shell functions
 source $PATH2SCRIPT/msi_shared.sh
@@ -29,8 +30,8 @@ PATH=$PATH:$PATH2SCRIPT/
 set -eu
 #set -e
 set -o pipefail
-# perform some checks on the fastq files and performs incremental analysis
 
+# perform some checks on the fastq files and performs incremental analysis
 set +u
 if [ "$MSI_DIR-" == "-" ]; then
     echo "Unable to continue: MSI_DIR variable not set" > /dev/stderr
@@ -163,6 +164,8 @@ while getopts "I:B:T:E:C:c:n:i:m:M:e:q:o:b:t:hdrSV"  Option; do
 	h) usage; exit;;
     esac
 done
+
+echo "MSI $MSI_VERSION" > /dev/stderr
 
 if [ "$CONF_FILE-" != "-" ]; then
     if [ ! -e $CONF_FILE ]; then
@@ -679,6 +682,16 @@ function process_fastq {
 	mv $CENTROIDS.tsv.tmp $CENTROIDS.tsv
     fi
 }
+
+####################################################
+# Versions
+# write versions to $OUT_FOLDER/date.versions.txt
+VERSIONS_FILE=$OUT_FOLDER/`date "+%F_%R"`.versions.txt
+echo MSI=$MSI_VERSION > $VERSIONS_FILE
+echo cutadapt=$(cutadapt --version) >> $VERSIONS_FILE
+echo racon=$(racon --version) >> $VERSIONS_FILE
+# echo isONclust=$(isONclust --version) >> $VERSIONS_FILE
+echo cd-hit=$(cd-hit -v 2>1|grep "CD-HIT version" | sed -E "s/.*version ([^ ]+) .*/\1/") >> $VERSIONS_FILE
 
 ####################################################
 ## Process each fastq_file
