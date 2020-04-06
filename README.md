@@ -79,13 +79,21 @@ Parameters may be passed to `msi.sh` in the command line or provided in a text f
 Example:
 `
 THREADS=5
+
 METADATAFILE=samplesheet.tsv
+
 LOCAL_BLAST_DB=local_db
+
 CLUSTER_MIN_READS=1
+
 CD_HIT_CLUSTER_THRESHOLD=0.99
+
 PRIMER_MAX_ERROR=0.2
+
 TAXONOMY_DATA_DIR=$MSI_DIR/db
+
 TL_DIR=path/to/fastq/files
+
 OUT_FOLDER=results
 `
 
