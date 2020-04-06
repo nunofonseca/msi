@@ -4,6 +4,8 @@
 
 # Installation
 
+There are two options to install MSI. One options involves downloading the latest version of MSI, compiling and installing MSI and 3rd party software to your operating system (only Linux is supported). An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
+
 ## Download
 
 Using git:
@@ -26,7 +28,7 @@ Note: Ensure that you have write permission to the parent folder.
 
 ## Configuration
 
-When the installation is complete, a file called `msi_env.sh` will be created in the top level folder (/opt/msi in the above example).
+When the installation is complete, a file called `msi_env.sh` will be created in the top level folder (~/msi in the above example).
 
 The following line should be run in a terminal or added to $HOME/.bashrc
 
@@ -34,7 +36,15 @@ The following line should be run in a terminal or added to $HOME/.bashrc
 
 where TOPLEVEL_FOLDER should be replaced by the toplevel folder (~/msi in the above example).
 
-## Installing databases
+## Docker
+
+A docker file is provided in the top level of msi: msi.dockerfile
+
+A docker image with MSI can be created by running the following command:
+`docker build -f msi.dockerfile -t "msi/latest" .`
+ 
+ 
+# Installing databases
 
 
 # Running
