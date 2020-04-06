@@ -41,6 +41,7 @@ where TOPLEVEL_FOLDER should be replaced by the toplevel folder (~/msi in the ab
 A docker file is provided in the top level of msi: msi.dockerfile
 
 A docker image with MSI can be created by running the following command:
+
 `docker build -f msi.dockerfile -t "msi/latest" .`
  
  
