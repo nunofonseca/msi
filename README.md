@@ -47,9 +47,16 @@ A docker image with MSI can be created by running the following command:
  
 # Installing databases
 
+
 ## Taxonomy
 
-MSI requires the taxonomy database available from NCBI (ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz). By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
+MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz. By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
+
+## BLAST
+
+A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command after having MSI installed and configured. 
+
+`./scripts/install.sh -i $MSI_DIR -x blast_db`
 
 # Running
 
