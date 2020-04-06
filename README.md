@@ -47,6 +47,9 @@ A docker image with MSI can be created by running the following command:
  
 # Installing databases
 
+## Taxonomy
+
+MSI requires the taxonomy database available from NCBI (ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz). By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
 
 # Running
 
