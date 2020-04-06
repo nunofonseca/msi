@@ -60,5 +60,47 @@ A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DI
 
 # Running
 
+`msi.sh [options] -i raw_data_toplevel_folder -o output_folder`
+
+where `raw_data_toplevel_folder` should correspond to the path to the folder where the fastq files (compressed with gzip) may be found. MSI will look to the top level folder and subfolders for all files with the filename extension .fastq.gz.
+
+To get a full list of options run
+`msi.sh -h`
+
+If running MSI in a docker then the command `msi_docker` may be used instead.
+For instance,
+
+`msi_docker -h`
+
+## Parameters file
+
+Parameters may be passed to `msi.sh` in the command line or provided in a text file (see example below). 
+
+Example:
+`
+THREADS=5
+METADATAFILE=samplesheet.tsv
+LOCAL_BLAST_DB=local_db
+CLUSTER_MIN_READS=1
+CD_HIT_CLUSTER_THRESHOLD=0.99
+PRIMER_MAX_ERROR=0.2
+TAXONOMY_DATA_DIR=$MSI_DIR/db
+TL_DIR=path/to/fastq/files
+OUT_FOLDER=results
+`
+
+## Metadata file
+
+The metadata file (TSV format) provides information for each file to be processed. The file shouls contain the at least the columns barcode_name, sample_id, ss_sample_id, primer_set, primer_f, primer_r, min_length, max_length, target_gene where:
+
+- primer_set:
+- primer_f:
+- primer_r:
+- min_length:
+- max_length:
+- target_gene:
+
+
+## Output files
 
 # Visualising the results
