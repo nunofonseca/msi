@@ -16,12 +16,12 @@ or download and unpack the zip file
 
 ## Compile and install
 
-To install MSI to a specific folder (e.g., /opt/msi) run
-`./scripts/msi_install.sh -i /opt/msi`
+To install MSI to a specific folder (e.g., ~/msi) run
+`./scripts/msi_install.sh -i ~/msi`
 
 The installation script will install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
 
-Note: Ensure that you have write permission to the parent folder (e.g., /opt in the above example)
+Note: Ensure that you have write permission to the parent folder.
 
 
 ## Configuration
@@ -32,7 +32,7 @@ The following line should be run in a terminal or added to $HOME/.bashrc
 
 `source TOPLEVEL_FOLDER/env.sh`
 
-where TOPLEVEL_FOLDER should be replaced by the toplevel folder (/opt/msi in the above example).
+where TOPLEVEL_FOLDER should be replaced by the toplevel folder (~/msi in the above example).
 
 ## Installing databases
 
