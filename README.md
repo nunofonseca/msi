@@ -4,7 +4,10 @@
 
 # Installation
 
-There are two options to install MSI. One options involves downloading the latest version of MSI, compiling and installing MSI and 3rd party software to your operating system (only Linux is supported). An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
+There are two main options to install MSI:
+1) installating to a folder in your file system (only Linux OS is supported). This involves downloading MSI from GitHub, unpacking, compiling and running the install script to install MSI and 3rd party software
+2) docker: An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
+
 
 ## Download
 
