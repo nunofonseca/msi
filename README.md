@@ -2,14 +2,14 @@
 
 
 
-# Installation
+## Installation
 
 There are two main options to install MSI:
 1) installating to a folder in your file system (only Linux OS is supported). This involves downloading MSI from GitHub, unpacking, compiling and running the install script to install MSI and 3rd party software
 2) docker: An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
 
 
-## Download
+### Download
 
 Using git:
 
@@ -19,7 +19,7 @@ or download and unpack the zip file
 `wget https://github.com/nunofonseca/msi/archive/master.zip`
 `unzip master.zip`
 
-## Compile and install
+### Compile and install
 
 To install MSI to a specific folder (e.g., ~/msi) run
 `./scripts/msi_install.sh -i ~/msi`
@@ -29,7 +29,7 @@ The installation script will install third party software used by MSI (e.g., R p
 Note: Ensure that you have write permission to the parent folder.
 
 
-## Configuration
+### Configuration
 
 When the installation is complete, a file called `msi_env.sh` will be created in the top level folder (~/msi in the above example).
 
@@ -39,7 +39,7 @@ The following line should be run in a terminal or added to $HOME/.bashrc
 
 where TOPLEVEL_FOLDER should be replaced by the toplevel folder (~/msi in the above example).
 
-## Docker
+### Docker
 
 A docker file is provided in the top level of msi: msi.dockerfile
 
@@ -48,20 +48,20 @@ A docker image with MSI can be created by running the following command:
 `docker build -f msi.dockerfile -t "msi/latest" .`
  
  
-# Installing databases
+## Installing databases
 
 
-## Taxonomy
+### Taxonomy
 
 MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz. By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
 
-## BLAST
+### BLAST
 
 A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command after having MSI installed and configured. 
 
 `./scripts/install.sh -i $MSI_DIR -x blast_db`
 
-# Running
+## Running
 
 `msi.sh [options] -i raw_data_toplevel_folder -o output_folder`
 
@@ -75,7 +75,7 @@ For instance,
 
 `msi_docker -h`
 
-## Parameters file
+### Parameters file
 
 Parameters may be passed to `msi.sh` in the command line or provided in a text file.
 
@@ -96,7 +96,7 @@ Assuming that the file myexp.conf contains the above lines, MSI could be started
 `msi.sh -c myexp.conf`
 
 
-## Metadata file
+### Metadata file
 
 The metadata file (TSV format) provides information for each file to be processed. The file shouls contain the at least the columns barcode_name, sample_id, ss_sample_id, primer_set, primer_f, primer_r, min_length, max_length, target_gene where:
 
