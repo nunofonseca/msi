@@ -77,20 +77,24 @@ For instance,
 
 ## Parameters file
 
-Parameters may be passed to `msi.sh` in the command line or provided in a text file (see example below). 
+Parameters may be passed to `msi.sh` in the command line or provided in a text file.
 
-Example:
+An example of the contents of a file with the parameters for MSI is shown next.
 ```
-THREADS=5
-METADATAFILE=samplesheet.tsv
-LOCAL_BLAST_DB=local_db
-CLUSTER_MIN_READS=1
-CD_HIT_CLUSTER_THRESHOLD=0.99
-PRIMER_MAX_ERROR=0.2
-TAXONOMY_DATA_DIR=$MSI_DIR/db
-TL_DIR=path/to/fastq/files
-OUT_FOLDER=results
+THREADS=5                          # maximum number of threads
+METADATAFILE=samplesheet.tsv       # metadata about each fastq file
+LOCAL_BLAST_DB=local_db            # path to blast database
+CLUSTER_MIN_READS=1                # minimum number of reads per cluster
+CD_HIT_CLUSTER_THRESHOLD=0.99      # cluster/group reads with a similitiry greater than the given threshould (range from 0 to 1)
+PRIMER_MAX_ERROR=0.2               # maximum error accepted when matching a primer sequence to the reads
+TAXONOMY_DATA_DIR=$MSI_DIR/db      # path to the taxonomy database 
+TL_DIR=path/to/fastq/files         # path to the toplevel folder containing the fastq files to be processed
+OUT_FOLDER=results                 # path to the folder where the files produced by MSI will be stored
 ```
+Assuming that the file myexp.conf contains the above lines, MSI could be started by running
+
+`msi.sh -c myexp.conf`
+
 
 ## Metadata file
 
