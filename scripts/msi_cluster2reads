@@ -73,8 +73,11 @@ fi
     fi
     set +e
     final_clu=$(grep "^$centr" $clu_file.map|cut -f 2|sed "s/_runid.*//")
+    hit=""
+    if  [ "$final_clu-" != "-" ]; then
+	hit=$(zgrep "$final_clu" $hit_file)
+    fi
     set -e
-    hit=$(zgrep "$final_clu" $hit_file)
     # 
     #echo read=$read
     #echo clu=$clu
