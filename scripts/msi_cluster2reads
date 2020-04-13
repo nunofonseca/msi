@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -o pipefail
+set -ue
+
+
+function usage {
+    echo "Usage: msi_cluster2reads [-c msi_param.conf -d -h -o out_folder] -i reads.txt"
+}
+#######################################################################################
+##
+CONF_FILE=
+OUT_FOLDER=
+READS_FILE=
+while getopts "di:c:o:h"  Option; do
+    case $Option in
+	d ) set -x;;
+	c ) CONF_FILE=$OPTARG;;
+	i ) READS_FILE=$OPTARG;;
+	o ) OUT_FOLDER=$OPTARG;;
+	h) usage; exit;;
+    esac
+done
+
+
+if [ "$CONF_FILE-" != "-" ]; then
+    if [ ! -e $CONF_FILE ]; then
+	perror "$CONF_FILE not found or not readable"
+	exit 1
+    fi
+    pinfo "Loading $CONF_FILE..."
+    set +u
+    source $CONF_FILE
+    set -u
+    pinfo "Loading $CONF_FILE...done."
+fi
+
+if [ "$OUT_FOLDER-" == "-" ]; then
+    echo "ERROR: missing parameters"
+    usage
+    exit 1
+fi
+
+if [ "$READS_FILE-" == "-" ]; then
+    echo "ERROR: missing parameters"
+    usage
+    exit 1
+fi
+
+tmpfile=$(mktemp)
+
+set +e
+grep -f $READS_FILE $OUT_FOLDER/*/*/final_clusters.csv> $tmpfile
+set -e
+#
+if [ ! -s $tmpfile ]; then
+    echo "ERROR: reads in $READS_FILE not found in $OUT_FOLDER/*/*/final_clusters.csv"
+    exit 1
+fi
+
+( cat $tmpfile |  while read l2; do
+    l=$(echo $l2|cut -f 1 -d\ )
+    path=$(echo $l | cut -f 1 -d:|sed "s/final_clusters.csv/final_cluster_origins.csv/")
+    clu=$(echo $l | cut -f 2 -d:)
+    read=$(echo $l2|cut -f 2 -d\ )
+    prefix=$(echo $path|cut -f 1,2 -d/)
+    centr=$(grep "^$clu\s" $path|cut -f 2|sed "s/_runid.*//")
+    hit_file=$(echo $path|cut -f 1 -d/)/results.tsv.gz
+    clu_file=$prefix/$(basename $prefix).centroids.withprimers.fasta-cdhit.clstr
+    hit_pat=$(echo $centr|sed "s/_runid.*//")
+    # clustered by cdhit
+    if [ ! -s  $clu_file.map ]; then
+	msi_clustr2map.pl $clu_file > $clu_file.map
+    fi
+    final_clu=$(grep "^$centr" $clu_file.map|cut -f 2|sed "s/_runid.*//")
+    hit=$(zgrep "$final_clu" $hit_file)
+    # 
+    #echo read=$read
+    #echo clu=$clu
+    #echo centroid=$centr
+    #echo final_cluster=$final_clu
+    #echo map_file=$clu_file.map
+    #echo hit=$hit
+    echo "$read|$final_clu|$hit"|tr "|" "\t"
+done  ) 
+
+exit 0
