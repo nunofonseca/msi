@@ -62,9 +62,9 @@ fi
     path=$(echo $l | cut -f 1 -d:|sed "s/final_clusters.csv/final_cluster_origins.csv/")
     clu=$(echo $l | cut -f 2 -d:)
     read=$(echo $l2|cut -f 2 -d\ )
-    prefix=$(echo $path|cut -f 1,2 -d/)
+    prefix=$(dirname $(dirname $path))
     centr=$(grep "^$clu\s" $path|cut -f 2|sed "s/_runid.*//")
-    hit_file=$(echo $path|cut -f 1 -d/)/results.tsv.gz
+    hit_file=$OUT_FOLDER/results.tsv.gz
     clu_file=$prefix/$(basename $prefix).centroids.withprimers.fasta-cdhit.clstr
     hit_pat=$(echo $centr|sed "s/_runid.*//")
     # clustered by cdhit
