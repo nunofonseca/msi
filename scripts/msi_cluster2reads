@@ -49,17 +49,17 @@ fi
 tmpfile=$(mktemp)
 
 set +e
-grep -f $READS_FILE $OUT_FOLDER/*/*/final_clusters.csv> $tmpfile
+grep -f $READS_FILE $OUT_FOLDER/*/*/final_clusters.tsv> $tmpfile
 set -e
 #
 if [ ! -s $tmpfile ]; then
-    echo "ERROR: reads in $READS_FILE not found in $OUT_FOLDER/*/*/final_clusters.csv"
+    echo "ERROR: reads in $READS_FILE not found in $OUT_FOLDER/*/*/final_clusters.tsv"
     exit 1
 fi
 
 ( cat $tmpfile |  while read l2; do
     l=$(echo $l2|cut -f 1 -d\ )
-    path=$(echo $l | cut -f 1 -d:|sed "s/final_clusters.csv/final_cluster_origins.csv/")
+    path=$(echo $l | cut -f 1 -d:|sed "s/final_clusters.tsv/final_cluster_origins.tsv/")
     clu=$(echo $l | cut -f 2 -d:)
     read=$(echo $l2|cut -f 2 -d\ )
     prefix=$(dirname $(dirname $path))
@@ -72,7 +72,7 @@ fi
 	msi_clustr2map.pl $clu_file > $clu_file.map
     fi
     set +e
-    final_clu=$(grep "^$centr" $clu_file.map|cut -f 2|sed "s/_runid.*//")
+    final_clu=$(grep "^$centr\s" $clu_file.map|cut -f 2|sed "s/_runid.*//")
     hit=""
     if  [ "$final_clu-" != "-" ]; then
 	hit=$(zgrep "$final_clu" $hit_file)
