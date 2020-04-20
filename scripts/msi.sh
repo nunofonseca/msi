@@ -284,7 +284,7 @@ function polish_sequences {
 	##RC - number of reads used for polishing the sequence
 	##XC - percentage of polished windows in the sequnce
 	## reference
-	grep -E "^$cluster_id\s" $out2/final_cluster_origins.csv |cut -f 2,3,4| sed "1s/^/@/;1s/\t/:size=$cluster_size\n/;s/\t/\n+\n/" > $out2/$cluster_id.fastq
+	grep -E "^$cluster_id\s" $out2/final_cluster_origins.tsv |cut -f 2,3,4| sed "1s/^/@/;1s/\t/:size=$cluster_size\n/;s/\t/\n+\n/" > $out2/$cluster_id.fastq
 	
 	if [ $cluster_size == 1 ]; then
 		ref=$out2/$cluster_id.fasta
@@ -292,7 +292,7 @@ function polish_sequences {
 		#continue
 		head -n 2 $out2/$cluster_id.fastq | sed "1s/^@/>/" > $ref		
 	else
-	    grep -E "^$cluster_id\s" $out2/final_clusters.csv |cut -f 2 > $out2/$cluster_id.seq_ids
+	    grep -E "^$cluster_id\s" $out2/final_clusters.tsv |cut -f 2 > $out2/$cluster_id.seq_ids
 	    grep -f $out2/$cluster_id.seq_ids -F -A 3 $out2/sorted.fastq | grep -v -- "^--$" > $out2/$cluster_id.seqs.fastq
 	    rm -f $out2/$cluster_id.seq_ids
 	    ## align
@@ -557,15 +557,16 @@ function process_fastq {
 	rm -rf $out2/*
 	#	    nreads=$(fastq_num_reads $FQ_FILE_F1)
 	#	    if [ $nreads -gt 1 ]; then
+	# 2020-04-20:  --mapped_threshold 0.8 --aligned_threshold 0.7
 	isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $CTHREADS
 	#	    fi
-	if [ -e $out2/final_clusters.csv ]; then
-	    cut -f 1 $out2/final_clusters.csv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
+	if [ -e $out2/final_clusters.tsv ]; then
+	    cut -f 1 $out2/final_clusters.tsv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
 	    polish_sequences $representatives $out2
 	    #ls -l $representatives
 	    #echo $fq_file $representatives >> $PROCESSED_FASTQS
 	else
-	    echo "isONclust did not generate $out2/final_clusters.csv "
+	    echo "isONclust did not generate $out2/final_clusters.tsv "
 	    exit 3
 	fi
     fi
