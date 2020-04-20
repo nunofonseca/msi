@@ -33,7 +33,7 @@ ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon c
 
 # upgraded 2019-12-04:
 cutadapt_VERSION=2.7
-isONclust_VERSION=0.0.4
+isONclust_VERSION=0.0.6
 
 blast_VERSION=2.10.0
 blast_URL=ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-${blast_VERSION}+-x64-linux.tar.gz
@@ -220,9 +220,11 @@ function install_racon {
 
 function install_msi {
     pinfo "Installing msi..."
+    pushd $PATH2SCRIPT/..
     cp scripts/* $INSTALL_BIN
-    cp -r template $INSTALL_DIR
     cp -r LICENSE README.md $INSTALL_DIR
+    cp -r template $INSTALL_DIR
+    popd
     pinfo "Installing msi...done."
 }
 
