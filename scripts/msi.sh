@@ -54,6 +54,17 @@ IGNORE_UNCLASSIFIED=0 ;## process (1) or not (0) the file with unclassified read
 ## minimum number of reads that a cluster must have to  pass the classification step (blastnig)
 CLUSTER_MIN_READS=1
 
+
+## Parameters from isONclust
+# https://github.com/ksahlin/isONclust
+#Minmum mapped fraction of read to be included in cluster. The density
+#of minimizers to classify a region as mapped depends on quality of
+#the read.
+CLUST_MAPPED_THRESHOLD=0.70
+#Minmum aligned fraction of read to be included in cluster. Aligned
+#identity depends on the quality of the read. (default: 0.4)
+CLUST_ALIGNED_THRESHOLD=0.40
+
 ## workind directory
 TL_DIR=$PWD
 # if no db is provided then a remote blast is performed
@@ -78,7 +89,6 @@ BLAST_CMD=blastn
 CLUSTER_ADD_SIZE=msi_clustr_add_size.pl
 TIME=/usr/bin/time
 
-## TODO
 ## check for commands
 
 COMMANDS_NEEDED="$FASTQ_INFO_CMD $FASTQ_QC_CMD $BLAST_CMD $CLUSTER_ADD_SIZE"
@@ -557,8 +567,7 @@ function process_fastq {
 	rm -rf $out2/*
 	#	    nreads=$(fastq_num_reads $FQ_FILE_F1)
 	#	    if [ $nreads -gt 1 ]; then
-	# 2020-04-20:  --mapped_threshold 0.8 --aligned_threshold 0.7
-	isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $CTHREADS
+	isONclust --ont --fastq <(gunzip -c $FQ_FILE_F1)  --outfolder $out2  --t $CTHREADS --mapped_threshold $CLUST_MAPPED_THRESHOLD --aligned_threshold  $CLUST_ALIGNED_THRESHOLD
 	#	    fi
 	if [ -e $out2/final_clusters.tsv ]; then
 	    cut -f 1 $out2/final_clusters.tsv | uniq -c | sed -E 's/^\s+//'> $out2/final_clusters_size.csv
@@ -566,7 +575,7 @@ function process_fastq {
 	    #ls -l $representatives
 	    #echo $fq_file $representatives >> $PROCESSED_FASTQS
 	else
-	    echo "isONclust did not generate $out2/final_clusters.tsv "
+	    echo "ERROR: isONclust did not generate $out2/final_clusters.tsv "
 	    exit 3
 	fi
     fi
