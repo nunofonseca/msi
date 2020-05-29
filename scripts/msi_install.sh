@@ -27,16 +27,17 @@ SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscr
 SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python3-devel"
 
 ## TOOLS
-ALL_SOFT="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db blast_db_slow blast_db msi"
-ALL_TOOLS="fastq_utils taxonkit fastqc cutadapt blast isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
+ALL_TOOLS="fastq_utils metabinkit fastqc cutadapt  isONclust minimap2 racon cd-hit R_packages msi"
+ALL_SOFT="$ALL_TOOLS  blast_db_slow blast_db"
+
 #ALL_TOOLS="isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
 
 # upgraded 2019-12-04:
 cutadapt_VERSION=2.7
 isONclust_VERSION=0.0.6
 
-blast_VERSION=2.10.0
-blast_URL=ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-${blast_VERSION}+-x64-linux.tar.gz
+metabinkit_VERSION=0.1.0
+metabinkit_URL=https://github.com/envmetagen/metabinkit/archive/${metabinkit_VERSION}.tar.gz
 
 fastq_utils_VERSION=0.23.0
 fastq_utils_URL=https://github.com/nunofonseca/fastq_utils/archive/$fastq_utils_VERSION.tar.gz
@@ -45,9 +46,6 @@ FASTQC_VERSION=0.11.8
 FASTQC_URL=http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v${FASTQC_VERSION}.zip
 
 ##
-TAXONKIT_VERSION=0.3.0
-TAXONKIT_URL=https://github.com/shenwei356/taxonkit/releases/download/v$TAXONKIT_VERSION/taxonkit_linux_amd64.tar.gz
-
 
 minimap2_VERSION=2.17
 minimap2_URL="https://github.com/lh3/minimap2/releases/download/v$minimap2_VERSION/minimap2-${minimap2_VERSION}_x64-linux.tar.bz2"
@@ -92,25 +90,6 @@ function install_taxonomy_db {
     pinfo "Installing taxonomy database...done"
 }
 
-function install_blast {
-	pinfo "Installing blast..."
-	pushd $TEMP_FOLDER
-	wget -c $blast_URL -O tmp.tar.gz
-	tar zxvpf tmp.tar.gz
-	cp ncbi-blast-${blast_VERSION}+/bin/* $INSTALL_BIN
-	## taxonomy
-	wget -c ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz
-	mkdir -p $INSTALL_DIR/db
-	mv taxdb.tar.gz $INSTALL_DIR/db
-	pushd $INSTALL_DIR/db
-	tar xzvf taxdb.tar.gz
-	rm -f taxdb.tar.gz
-	popd
-	popd
-	pinfo "Installing blast...done."
-}
-
-
 function install_fastq_utils {
     pinfo "Installing fastq_utils..."
     rm -f tmp.tar.gz
@@ -125,19 +104,18 @@ function install_fastq_utils {
     pinfo "Installing fastq_utils...done."
 }
 
-function install_taxonkit {
-    echo "Installing taxonkit.."
-    pushd $TEMP_FOLDER
+function install_metabinkit {
+    pinfo "Installing metabinkit..."
     rm -f tmp.tar.gz
-    wget -c  $TAXONKIT_URL -O tmp.tar.gz
-    tar xzvf tmp.tar.gz
-    mkdir -p $INSTALL_BIN
-    chmod +x taxonkit
-    mv taxonkit $INSTALL_BIN
-    rm -f tmp.tar.gz
+    wget -c $metabinkit_URL -O tmp.tar.gz
+    tar -zxvf tmp.tar.gz
+    pushd metabinkit-${metabinkit_VERSION}
+    CFLAGS=  ./install.sh -i $INSTALL_DIR
     popd
-    echo "Installing taxonkit..done."
+    rm -rf metabinkit-${metabinkit_VERSION} tmp.tar.gz
+    pinfo "Installing metabinkit...done."
 }
+
 
 function install_fastqc { 
     
@@ -298,27 +276,6 @@ EOF
     
 }
 
-###############################################################
-##
-## local blast db
-## depends on blast
-## mkdir -p ~/blastdb; pushd ~/blastdb
-## update_blastdb.pl  --verbose nt taxdb 
-## gem install ncbi-blast-dbs
-## email="nf@ebi.ac.uk" ncbi-blast-dbs nt
-## rm -f *.gz
-## make index
-# makembindex -input nt
-
-# database
-# http://ccb.jhu.edu/software/centrifuge/manual.shtml#nt-database
-#wget ftp://ftp.ncbi.nih.gov/blast/db/FASTA/nt.gz
-#gunzip nt.gz && mv -v nt nt.fa
-
-# Get mapping file
-#wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
-#gunzip -c gi_taxid_nucl.dmp.gz | sed 's/^/gi|/' > gi_taxid_nucl.map
-
 
 
 ######################################################################
@@ -372,7 +329,7 @@ function msi_to_docker {
 
 ## default installation folder
 INSTALL_DIR=$PWD/msi
-set +eux
+set +eu
 if [ "$MSI_DIR-" != "-" ]; then
     ## update previous installation
     INSTALL_DIR=$MSI_DIR
@@ -397,7 +354,7 @@ done
 if [ $DEBUG == 1 ]; then
     set -eux
 else
-    set +eux
+    set +x
     set -eu
 fi
 
@@ -438,10 +395,7 @@ export PYTHONPATH=$MSI_DIR/lib64/$python_dir/site-packages:\$MSI_DIR/lib/$python
 ## R packages
 export R_LIBS=\$MSI_DIR/Rlibs:\$R_LIBS
 PATH=\$MSI_DIR/python/bin:\$PATH
-# BLAST
-if [ "\$BLASTDB-" == "-" ]; then
-export BLASTDB=\$MSI_DIR/db
-fi
+source $MSI_DIR/metabinkit_env.sh
 EOF
     pinfo "Generating $1...done"
 }
