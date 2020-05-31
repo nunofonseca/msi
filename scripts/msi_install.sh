@@ -319,7 +319,7 @@ function install_all {
 }
 
 function msi_to_docker {
-    MSI_VERSION=$(grep MSI_VERSION= $PATH2SCRIPT/msi.sh|cut -f 2 -d=)
+    MSI_VERSION="0.1.0"
     set -e
     echo "Generating docker image with MSI...this may take a while"
     pushd $PATH2SCRIPT/..
