@@ -90,7 +90,6 @@ OLD_COLUMN_NUM=$(get_metadata_col_pos $METADATA_COLUMN_OLD)
 NEW_COLUMN_NUM=$(get_metadata_col_pos $METADATA_COLUMN_NEW)
 
 tmp=$(mktemp -p . .msi_rename_XXX)
-tmp=a
 zcat $TSV_FILE|  tail -n +2 | sort -k1,1 > $tmp.1
 
 ## header
@@ -100,7 +99,7 @@ set -e
 awk -v  c1="${OLD_COLUMN_NUM}" -v c2="${NEW_COLUMN_NUM}" 'BEGIN {FS="\t"; OFS="\t"} {print $c1,$c2 }' $METADATAFILE | tail -n +2 | sort -k1,1 > $tmp.2
 join -t$'\t' $tmp.2 $tmp.1  | cut -f 2-
 
-rm -f $tmp.2 $tmp.1 
+rm -f $tmp.2 $tmp.1 $tmp
 
 exit 0
 
