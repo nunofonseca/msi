@@ -395,7 +395,9 @@ export PYTHONPATH=$MSI_DIR/lib64/$python_dir/site-packages:\$MSI_DIR/lib/$python
 ## R packages
 export R_LIBS=\$MSI_DIR/Rlibs:\$R_LIBS
 PATH=\$MSI_DIR/python/bin:\$PATH
-source $MSI_DIR/metabinkit_env.sh
+if [ -e $MSI_DIR/metabinkit_env.sh ]; then
+   source $MSI_DIR/metabinkit_env.sh
+fi
 EOF
     pinfo "Generating $1...done"
 }
