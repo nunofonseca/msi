@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 # =========================================================
 # Copyright 2019-2020,  Nuno A. Fonseca (nuno dot fonseca at gmail dot com)
 #
