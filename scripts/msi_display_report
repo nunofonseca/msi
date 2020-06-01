@@ -1,7 +1,27 @@
 #!/usr/bin/env bash
+# =========================================================
+# Copyright 2019-2020,  Nuno A. Fonseca (nuno dot fonseca at gmail dot com)
+#
+#
+# This is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this file.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# =========================================================
 
 ## looks for a results.tsv.gz file in the current folder
-def_file=results.tsv.gz
+def_file=
+#results.tsv.gz
 
 function usage {
     echo "Usage: msi_display_report  [options]  ";
@@ -31,7 +51,10 @@ do
     esac
 done
 
-
+if [ "$ifile-" == "-" ]; then
+    echo "ERROR: -t parameter missing."
+    exit 1
+fi
 ## We should provide the full path to shiny
 ifile=`readlink -f $ifile`
 echo "Looking for $ifile"
@@ -58,6 +81,7 @@ if [ "$HOST-" == "-" ]; then
   HOST="127.0.0.1"
 fi
 
+set -e 
 ## run the app
 R --vanilla  <<EOF
 library(rmarkdown)
@@ -66,6 +90,7 @@ library(shiny)
 
 ifile<-"$ifile"
 # simple invocation
-rmarkdown::run(file="$RMD_FILE",shiny_args = list("launch.browser"=TRUE, port=$PORT, host="$HOST"),render_args=list(params=list(set_title=paste0("WIMS ","$REP_NAME"))))
+rmarkdown::run(file="$RMD_FILE",shiny_args = list("launch.browser"=TRUE, port=$PORT, host="$HOST"),render_args=list(params=list(set_title=paste0("MSI report ","$REP_NAME"))))
 EOF
 
+exit 0
