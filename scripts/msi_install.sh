@@ -30,7 +30,7 @@ SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python3-devel"
 ALL_TOOLS="fastq_utils metabinkit fastqc cutadapt  isONclust minimap2 racon cd-hit R_packages msi"
 ALL_SOFT="$ALL_TOOLS  blast_db_slow blast_db"
 
-#ALL_TOOLS="isONclust minimap2 racon cd-hit R_packages taxonomy_db msi"
+#ALL_TOOLS="isONclust minimap2 racon cd-hit R_packages msi"
 
 # upgraded 2019-12-04:
 cutadapt_VERSION=2.7
@@ -78,17 +78,7 @@ function install_blast_db {
     popd
     pinfo "Installing blast database...done"
 }
-function install_taxonomy_db {
-    pinfo "Installing taxonomy database..."
-    pushd $TEMP_FOLDER
-    wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
-    mkdir -p $INSTALL_DIR/db
-    tar xzvf taxdump.tar.gz -C $INSTALL_DIR/db
-    echo Downloaded `date` > $INSTALL_DIR/db/taxonomy.info
-    rm -f taxdump.tar.gz
-    popd
-    pinfo "Installing taxonomy database...done"
-}
+
 
 function install_fastq_utils {
     pinfo "Installing fastq_utils..."
