@@ -101,9 +101,10 @@ blast_perc_identity=70
 #blast_db=
 #MIN_ID=70
 # if no db is provided then a remote blast is performed (very slow)
-blast_refdb=~/blastdb/nt
+blast_refdb=
+##~/blastdb/nt
 
-BLAST_VALID_PARAMS="refdb, outfile,infasta,threads, max_hsps, word_size,perc_identity,qcov_hsp_perc, gapopen, gapextend,reward,evalue,penalty,max_target_seqs,taxids_blacklist_files,taxids_poslist_files"
+BLAST_VALID_PARAMS="refdb, outfile,infasta, max_hsps, word_size,perc_identity,qcov_hsp_perc, gapopen, gapextend,reward,evalue,penalty,max_target_seqs,taxids_blacklist_files,taxids_poslist_files"
 
 blast_outfmt="6 qseqid sseqid evalue bitscore pident nident mismatch qlen length sgi sacc staxids ssciname scomnames stitle"
 
@@ -265,13 +266,14 @@ function run_blast {
     ##
     local params=$(echo "$mbk_blast_options" | sed "s/-refdb/-D/;s/-taxid/-T/;s/-max_hsps/-m/;s/-word_size/-W/;s/-perc_identity/-I/;s/-qcov_hsp_perc/-q/;s/-gapopen/-G/;s/-gapextend/-E/;s/-reward/-r/;s/-evalue/-e/;s/-penalty/-p/;s/-max_target_seqs/-M/;s/-taxids_blacklist_files=/-N/;s/taxids_poslist_files/-P/")
 
+    ## :( using a global variable here..
     if [ "$blast_refdb-" == "-" ]; then
 	params+=" -remote -db nt"
 	pinfo "Remote blast query (this may take a while)"
     fi
-
     ## Subject Scientific Name(s) are separated by a ';'
     pinfo "starting blast..."
+    pinfo "Running: $BLAST_CMD   -f $query  -o $out $params -t $THREADS -O '$blast_outfmt'"
     $BLAST_CMD   -f $query  -o $out $params -t $THREADS -O "$blast_outfmt"
     pinfo "blast query complete."
 }
@@ -285,6 +287,7 @@ function run_metabin {
     
     # call metabin
     pinfo "starting binning..."
+    pinfo "Running: metabin -i $blast_file -o $out_file_prefix $mbk_params"
     metabin -i $blast_file -o $out_file_prefix $mbk_params
     pinfo "starting binning...done."
 }
@@ -363,6 +366,7 @@ if [ "$METADATAFILE-" != "-" ]; then
     validate_metadata_file $METADATAFILE
 fi
 
+pinfo "cmd: $0 $@" > /dev/stderr
 ################################################################################
 ## start working....
 ##set +e
