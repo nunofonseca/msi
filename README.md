@@ -1,5 +1,4 @@
-# msi
-
+# msi [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) 
 
 
 ## Installation
