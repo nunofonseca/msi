@@ -2,7 +2,7 @@ name: Docker
 
 on:
   release:
-    types: [published, created, released]
+    types: [published, created, released, edited, prereleased]
     
 
 env:
