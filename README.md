@@ -83,16 +83,20 @@ The above command needs to be run each time a terminal is opened or be added to 
 
 ### Databases
 
-#### Taxonomy
+#### NCBI taxonomy database
 
 MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz. By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
 
-#### BLAST
+#### BLAST/NCBI nt
 
 A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command after having MSI installed and configured. 
 
 `./scripts/install.sh -i $MSI_DIR -x blast_db`
 
+Alternatively, a BLAST database can be easily created from a FASTA file a blast database using the command metabinkit_blastgendb provided by metabinkit (and installed in MSI). By default, the metabinkit_blastgendb command expects to find the taxid associated to each sequence in the FASTA file in the respective header. The FASTA header should have the format 
+
+    >sequence_id taxids=xxxxx;
+    
 
 ### Running MSI
 
