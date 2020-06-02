@@ -19,7 +19,7 @@
 #
 # =========================================================
 
-MSI_VERSION="0.2.7"
+MSI_VERSION="0.2.8"
 PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 ## load shell functions
 source $PATH2SCRIPT/msi_shared.sh
