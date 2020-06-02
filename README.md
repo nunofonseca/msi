@@ -41,20 +41,26 @@ See the [Docker userguide](https://docs.docker.com/) for more details on how to 
 
 ### Installation
 
+#### Supported OS
+
+MSI is developed and tested on multiple distributions of Linux (e.g. Fedora, Ubuntu). Consider the Docker container if you use a non-supported OS or OS version.
+
 There are two main options to install MSI:
 1) installating to a folder in your file system (only Linux OS is supported). This involves downloading MSI from GitHub, unpacking, compiling and running the install script to install MSI and 3rd party software
 2) docker: An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
 
 
-#### Download
+#### Getting sources
 
-Using git:
+Option 1: download the latest source release tarball from https://github.com/nunofonseca/msi/releases, and then from your download directory type:
 
-`git clone https://github.com/nunofonseca/msi.git`
+    tar xzf msi-x.x.x.tar.gz
+    cd msi-x.x.x
 
-or download and unpack the zip file
-`wget https://github.com/nunofonseca/msi/archive/master.zip`
-`unzip master.zip`
+Option 2: to use git to download the repository  with the entire code history, type:
+
+    git clone https://github.com/nunofonseca/msi.git
+    cd msi
 
 #### Compile and install
 
