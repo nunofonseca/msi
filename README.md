@@ -197,3 +197,11 @@ Currently the min_length and max_length are not used by MSI to exclude fragments
 
 #### Output files
 
+Upon execution, MSI will create a directory set either by the -o OUTPUT_NAME or in the .cfg file with OUT_FOLDER=OUTPUT_NAME. This directory will contain several files and directories
+
+OUTPUT_NAME
+
+|---|---|---|
+|f|*.versions.txt|Versions of the software used|
+|f|bin.tsv.gz| Binning table produced by metabinkit (tsv format)|
+
