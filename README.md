@@ -49,10 +49,6 @@ See the [Docker userguide](https://docs.docker.com/) for more details on how to 
 
 MSI is developed and tested on multiple distributions of Linux (e.g. Fedora, Ubuntu). Consider the Docker container if you use a non-supported OS or OS version.
 
-There are two main options to install MSI:
-1) installating to a folder in your file system (only Linux OS is supported). This involves downloading MSI from GitHub, unpacking, compiling and running the install script to install MSI and 3rd party software
-2) docker: An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
-
 
 #### Getting sources
 
@@ -68,26 +64,24 @@ Option 2: to use git to download the repository  with the entire code history, t
 
 #### Compile and install
 
+MSI requires several third-party programs to operate. A script (scripts/msi_install.sh) is provided to facilitate the installation of MSI and some dependencies, others need to be already installed in the system (e.g., R 3.6.0 or above). A list of system dependencies can be found in MSI's [Dockerfile](https://github.com/nunofonseca/msi/Dockerfile).
+
 To install MSI to a specific folder (e.g., ~/msi) run
 `./scripts/msi_install.sh -i ~/msi`
 
-The installation script will install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
+The installation script will download and install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
 
 Note: Ensure that you have write permission to the parent folder.
 
-
 #### Configuration
 
-When the installation is complete, a file called `msi_env.sh` will be created in the top level folder (~/msi in the above example).
+A file msi_env.sh will be created on the toplevel installation folder (~/msi in the above example) with the configuration setup for the shell. To enable the configuration is necessary to load the configuration with the source command, e.g., 
 
-The following line should be run in a terminal or added to $HOME/.bashrc
+    source $HOME/msi_env.sh
 
-`source TOPLEVEL_FOLDER/env.sh`
-
-where TOPLEVEL_FOLDER should be replaced by the toplevel folder (~/msi in the above example).
+The above command needs to be run each time a terminal is opened or be added to the $HOME/.bash_profile file.
 
 ### Databases
-
 
 #### Taxonomy
 
@@ -98,6 +92,7 @@ MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pu
 A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command after having MSI installed and configured. 
 
 `./scripts/install.sh -i $MSI_DIR -x blast_db`
+
 
 ### Running MSI
 
