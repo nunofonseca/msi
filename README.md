@@ -182,18 +182,18 @@ Assuming that the file myexp.cfg contains the above lines, MSI could be started 
 
 `msi -c myexp.cfg`
 
-
 #### Metadata file
 
-The metadata file (TSV format) provides information for each file to be processed. The file shouls contain the at least the columns barcode_name, sample_id, ss_sample_id, primer_set, primer_f, primer_r, min_length, max_length, target_gene where:
+The metadata file (TSV format) provides information for each file to be processed by MSI. The file should contain the columns barcode_name, sample_id, ss_sample_id, primer_set, primer_f, primer_r, min_length, max_length, target_gene where:
 
-- primer_set:
-- primer_f:
-- primer_r:
-- min_length:
-- max_length:
-- target_gene:
+- primer_set: unique identifier of the primer
+- primer_f:  5'end primer sequence (forward primer)
+- primer_r:  3'end reverse complemented primer sequence (reverse primer)
+- min_length: minimum length of the fragment
+- max_length: maximum length of the fragment
+- target_gene: name of the gene targeted
 
+Currently the min_length and max_length are not used by MSI to exclude fragments.
 
 #### Output files
 
