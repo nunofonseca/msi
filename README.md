@@ -1,42 +1,14 @@
-# msi ![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) 
+## msi ![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) 
 
 
-## Installation
-
-There are two main options to install MSI:
-1) installating to a folder in your file system (only Linux OS is supported). This involves downloading MSI from GitHub, unpacking, compiling and running the install script to install MSI and 3rd party software
-2) docker: An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
-
-
-### Download
-
-Using git:
-
-`git clone https://github.com/nunofonseca/msi.git`
-
-or download and unpack the zip file
-`wget https://github.com/nunofonseca/msi/archive/master.zip`
-`unzip master.zip`
-
-### Compile and install
-
-To install MSI to a specific folder (e.g., ~/msi) run
-`./scripts/msi_install.sh -i ~/msi`
-
-The installation script will install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
-
-Note: Ensure that you have write permission to the parent folder.
+1. [Overview](#Overview)
+2. [Docker](#Docker)
+3. [Manual installation](#Installation)
+4. [Databases](#Databases)
+5. [Running MSI](#Running-MSI)
 
 
-### Configuration
-
-When the installation is complete, a file called `msi_env.sh` will be created in the top level folder (~/msi in the above example).
-
-The following line should be run in a terminal or added to $HOME/.bashrc
-
-`source TOPLEVEL_FOLDER/env.sh`
-
-where TOPLEVEL_FOLDER should be replaced by the toplevel folder (~/msi in the above example).
+### Overview
 
 ### Docker
 
@@ -47,20 +19,57 @@ A docker image with MSI can be created by running the following command:
 `docker build -f msi.dockerfile -t "msi/latest" .`
  
  
-## Installing databases
+### Installation
+
+There are two main options to install MSI:
+1) installating to a folder in your file system (only Linux OS is supported). This involves downloading MSI from GitHub, unpacking, compiling and running the install script to install MSI and 3rd party software
+2) docker: An alternative option involves creating/downloading a docker image with MSI (a docker file for MSI is available at https://github.com/nunofonseca/msi/blob/master/msi.dockerfile).
 
 
-### Taxonomy
+#### Download
+
+Using git:
+
+`git clone https://github.com/nunofonseca/msi.git`
+
+or download and unpack the zip file
+`wget https://github.com/nunofonseca/msi/archive/master.zip`
+`unzip master.zip`
+
+#### Compile and install
+
+To install MSI to a specific folder (e.g., ~/msi) run
+`./scripts/msi_install.sh -i ~/msi`
+
+The installation script will install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
+
+Note: Ensure that you have write permission to the parent folder.
+
+
+#### Configuration
+
+When the installation is complete, a file called `msi_env.sh` will be created in the top level folder (~/msi in the above example).
+
+The following line should be run in a terminal or added to $HOME/.bashrc
+
+`source TOPLEVEL_FOLDER/env.sh`
+
+where TOPLEVEL_FOLDER should be replaced by the toplevel folder (~/msi in the above example).
+
+### Databases
+
+
+#### Taxonomy
 
 MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz. By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
 
-### BLAST
+#### BLAST
 
 A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command after having MSI installed and configured. 
 
 `./scripts/install.sh -i $MSI_DIR -x blast_db`
 
-## Running
+### Running MSI
 
 `msi.sh [options] -i raw_data_toplevel_folder -o output_folder`
 
