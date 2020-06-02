@@ -64,7 +64,7 @@ Option 2: to use git to download the repository  with the entire code history, t
 
 #### Compile and install
 
-MSI requires several third-party programs to operate. A script (scripts/msi_install.sh) is provided to facilitate the installation of MSI and some dependencies, others need to be already installed in the system (e.g., R 3.6.0 or above). A list of system dependencies can be found in MSI's [Dockerfile](https://github.com/nunofonseca/msi/Dockerfile).
+MSI requires several third-party programs to operate. A script (scripts/msi_install.sh) is provided to facilitate the installation of MSI and some dependencies, others need to be already installed in the system (e.g., R 3.6.0 or above, EMBOSS 6.5 or above). A list of system dependencies can be found in MSI's [Dockerfile](https://github.com/nunofonseca/msi/Dockerfile).
 
 To install MSI to a specific folder (e.g., ~/msi) run
 `./scripts/msi_install.sh -i ~/msi`
