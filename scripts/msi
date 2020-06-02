@@ -906,7 +906,7 @@ VERSIONS_FILE=$OUT_FOLDER/`date "+%F_%R"`.versions.txt
 echo MSI=$MSI_VERSION > $VERSIONS_FILE
 echo cutadapt=$(cutadapt --version) >> $VERSIONS_FILE
 echo racon=$(racon --version) >> $VERSIONS_FILE
-# echo isONclust=$(isONclust --version) >> $VERSIONS_FILE
+echo isONclust=$(isONclust --version) >> $VERSIONS_FILE
 echo cd-hit=$(cd-hit -v 2>1|grep "CD-HIT version" | sed -E "s/.*version ([^ ]+) .*/\1/") >> $VERSIONS_FILE
 
 ####################################################
