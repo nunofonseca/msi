@@ -12,13 +12,33 @@
 
 ### Docker
 
-A docker file is provided in the top level of msi: msi.dockerfile
+A docker file is provided in the top level of MSI (Dockerfile) that will wrap everything required to run a MSI analysis. This facilitates the setup and installation of MSI, and track all software versions used in the analyses. See the [Docker userguide](https://docs.docker.com/) for more details.
 
-A docker image with MSI can be created by running the following command:
+Alternatively you may install the software from source following the instructions provided next. A 64 bit computer with an up to date Linux OS installed will be required.
 
-`docker build -f msi.dockerfile -t "msi/latest" .`
+#### Pre-built docker image with MSI
+
+A pre-built image with the latest version of MSI can be dowloaded with the following command:
  
- 
+`docker pull docker.pkg.github.com/nunofonseca/msi/image:latest`
+
+
+##### Creating a docker image with MSI
+
+A docker image containing MSI can be created, after downloading MSI, by running the following command:
+
+`docker build -f Dockerfile -t msi/latest .`
+
+See the [Docker userguide](https://docs.docker.com/) for more details.
+
+##### How to run MSI in a docker container
+
+Next we provide two ways of running a MSI container in non-interactive mode.
+
+TODO TODO
+
+See the [Docker userguide](https://docs.docker.com/) for more details on how to run containers in interactive and non-interactive mode.
+
 ### Installation
 
 There are two main options to install MSI:
