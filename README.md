@@ -33,9 +33,13 @@ See the [Docker userguide](https://docs.docker.com/) for more details.
 
 ##### How to run MSI in a docker container
 
-Next we provide two ways of running a MSI container in non-interactive mode.
+A companion script to run MSI in a docker container in non-interactive mode is provided here: ([msi_docker](https://github.com/nunofonseca/msi/scripts/msi_docker))
 
-TODO TODO
+`scripts/msi_docker params_to_msi1  params_to_msi2 ...`
+
+It accepts the same arguments as the standalone MSI command with the
+caveat that the working directory is a subfolder in the current
+directory called msi_wd/.
 
 See the [Docker userguide](https://docs.docker.com/) for more details on how to run containers in interactive and non-interactive mode.
 
