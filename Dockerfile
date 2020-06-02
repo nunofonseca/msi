@@ -5,8 +5,7 @@ RUN dnf update -y && dnf install -y git bzip2-devel bzip2 zlib-devel git gcc wge
 
 
 WORKDIR /opt
-
-RUN git clone git@github.com:nunofonseca/msi.git
+RUN git clone https://github.com/nunofonseca/msi.git
 WORKDIR /opt/msi
 RUN ./scripts/msi_install.sh -i /opt/msi_install
 
