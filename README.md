@@ -231,10 +231,12 @@ The ouput files will be placed in `quick_test/t4`:
 To run the above examples it is assumed that MSI is installed and configured. To use MSI inside a docker is also easy. After downloading MSI:
 
  1. Get the latest docker image with MSI
+ 
     docker pull nunofonseca/msi:latest
 
  2. Use msi_docker to run the analysis (assumes that MSI's toplevel folder is the current working directory)
-    ./scripts/msi_docker -I tests/metadata/metadata2.tsv -i tests/samples/s4/ -o quick_test_docker/t4 -b quick_test/refdb/db1 
+
+    ./scripts/msi_docker  -i tests/samples/s4/ -o quick_test_docker/t4 -b quick_test/refdb/db1 
 
 
 Note that it may need to be necessary to give permission to docker to access your local folder (in order to access the input files and write the output files). This can be done by running the command
