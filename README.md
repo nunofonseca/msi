@@ -210,5 +210,23 @@ OUTPUT_NAME
 | file | binres.tsv.gz | tsv file combining the binning results from metabinkit with the results.tsv.gz file |
 | file | running.stats.tsv.gz | table containing statistics (nreads,quality_encoding,quality_enc_min,quality_enc_max,read_len_min    read_len_max,read_len_avg) for each fastq and each step of the analyses |
 
+#### Example
+
+Start by generating a blast database by running
+
+`  metabinkit_blastgendb -f tests/fasta/test_refdb.fasta -o quick_test/refdb/db1 -c -t 2`
+
+A small blast database will be created in the folder `test/refdb/db1`.
+
+In the folder `tests/samples/s4/` there is a fastq file compressed with gzip (`barcode31.fastq.gz`). To process this file run the command:
+
+`msi  -I tests/metadata/metadata2.tsv  -i tests/samples/s4/ -o quick_test/t4 -b quick_test/refdb/db1`
+
+The ouput files will be placed in `quick_test/t4`:
+ 
+    $ ls -F quick_test/t4/
+    2020-06-02.versions.txt  barcode31/  binres.tsv.gz  bin.tsv.gz  results.fasta.gz  results.tsv.gz  running.stats.tsv.gz
+
+
 
 
