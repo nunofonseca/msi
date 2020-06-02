@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 
-set -eux -o pipefail
-
+set -eu -o pipefail
+# set -x
 function usage {
     echo "msi_tidyup_results  fasta_file blast.tsv out_tsv_file taxonomy_data_directory"
 }
