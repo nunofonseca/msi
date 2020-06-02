@@ -1,4 +1,4 @@
-## msi ![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html)[![DOI](https://zenodo.org/badge/191382419.svg)](https://zenodo.org/badge/latestdoi/191382419) 
+## msi ![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) (https://hub.docker.com/r/nunofonseca/msi/tags/) [![DOI](https://zenodo.org/badge/191382419.svg)](https://zenodo.org/badge/latestdoi/191382419) 
 
 
 1. [Overview](#Overview)
