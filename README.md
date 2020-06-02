@@ -241,5 +241,5 @@ To run the above examples it is assumed that MSI is installed and configured. To
 
 Note that it may need to be necessary to give permission to docker to access your local folder (in order to access the input files and write the output files). This can be done by running the command
 
-    `chcon -Rt svirt_sandbox_file_t $PWD`
+    chcon -Rt svirt_sandbox_file_t $PWD
 
