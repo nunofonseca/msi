@@ -18,12 +18,11 @@
 #
 #
 # =========================================================
-# run msi in a docker image
-set -e -o pipefail
-ARGS=$*
-
+## run msi in a docker image
 ## look for the latest image
-MSI_DOCKER_IMAGE=$(docker images | grep "msi/.*\slatest"|sed -E "s/\s+/\t/g"|cut -f 3|head -n 1)
+set +e +o pipefail
+MSI_DOCKER_IMAGE=$(docker images | grep "[\s/]msi.*\slatest\s"|sed -E "s/\s+/\t/g"|cut -f 3|head -n 1)
+set -e -o pipefail
 if [ "$MSI_DOCKER_IMAGE-" == "-" ]; then
     echo "ERROR: MSI_DOCKER_IMAGE not found"
     exit 1
