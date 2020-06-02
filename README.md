@@ -201,7 +201,14 @@ Upon execution, MSI will create a directory set either by the -o OUTPUT_NAME or 
 
 OUTPUT_NAME
 
-|---|---|---|
-|f|*.versions.txt|Versions of the software used|
-|f|bin.tsv.gz| Binning table produced by metabinkit (tsv format)|
+| Type    |  File/Dirname   | Description    | 
+| --- | --- | --- |
+| dirs | fastq_file_prefix* | One folder per input fastq file |
+| files | *.versions.txt | Versions of the software used |
+| file | results.fasta.gz | fasta file with the clustered/corrected reads|
+| file | bin.tsv.gz | Binning table produced by metabinkit (tsv format) |
+| file | binres.tsv.gz | tsv file combining the binning results from metabinkit with the results.tsv.gz file |
+| file | running.stats.tsv.gz | table containing statistics (nreads,quality_encoding,quality_enc_min,quality_enc_max,read_len_min    read_len_max,read_len_avg) for each fastq and each step of the analyses |
+
+
 
