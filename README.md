@@ -20,7 +20,7 @@ Alternatively you may install the software from source following the instruction
 
 A pre-built image with the latest version of MSI can be dowloaded with the following command:
  
-`docker pull docker.pkg.github.com/nunofonseca/msi/image:latest`
+`docker pull nunofonseca/msi:latest`
 
 ##### Creating a docker image with MSI
 
