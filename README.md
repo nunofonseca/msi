@@ -87,53 +87,103 @@ The above command needs to be run each time a terminal is opened or be added to 
 
 MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz. By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
 
-#### BLAST/NCBI nt
+#### BLAST database
 
 A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command after having MSI installed and configured. 
 
 `./scripts/install.sh -i $MSI_DIR -x blast_db`
 
-Alternatively, a BLAST database can be easily created from a FASTA file a blast database using the command metabinkit_blastgendb provided by metabinkit (and installed in MSI). By default, the metabinkit_blastgendb command expects to find the taxid associated to each sequence in the FASTA file in the respective header. The FASTA header should have the format 
+Alternatively, a BLAST database can be easily created from a FASTA file  using the command metabinkit_blastgendb provided by [metabinkit](https://github.com/envmetagen/metabinkit) (and installed as part of MSI). By default, the metabinkit_blastgendb command expects to find the taxid associated to each sequence in the FASTA file in the respective header. The FASTA header should have the format 
 
     >sequence_id taxids=xxxxx;
     
 
+
 ### Running MSI
 
-`msi.sh [options] -i raw_data_toplevel_folder -o output_folder`
+`msi [options] -c params_file.cfg -i raw_data_toplevel_folder -o output_folder`
 
-where `raw_data_toplevel_folder` should correspond to the path to the folder where the fastq files (compressed with gzip) may be found. MSI will look to the top level folder and subfolders for all files with the filename extension .fastq.gz.
+where `raw_data_toplevel_folder` should correspond to the path to the folder where the fastq files (compressed with gzip) may be found. MSI will search for files  with the filename extension .fastq.gz in the top level folder and subfolders.
 
-To get a full list of options run
-`msi.sh -h`
+To get a full list of command line options run
+`msi -h`
 
 If running MSI in a docker then the command `msi_docker` may be used instead.
 For instance,
 
 `msi_docker -h`
 
-### Parameters file
+#### Parameters
 
-Parameters may be passed to `msi.sh` in the command line or provided in a text file.
+Parameters may be passed to `msi` in a text file using the format `parameter=value`. The file may have comments - all characters after a `#` until the end of the line are ignored.
 
 An example of the contents of a file with the parameters for MSI is shown next.
 ```
-THREADS=5                          # maximum number of threads
-METADATAFILE=samplesheet.tsv       # metadata about each fastq file
-LOCAL_BLAST_DB=local_db            # path to blast database
-CLUSTER_MIN_READS=1                # minimum number of reads per cluster
-CD_HIT_CLUSTER_THRESHOLD=0.99      # cluster/group reads with a similitiry greater than the given threshould (range from 0 to 1)
-PRIMER_MAX_ERROR=0.2               # maximum error accepted when matching a primer sequence to the reads
-TAXONOMY_DATA_DIR=$MSI_DIR/db      # path to the taxonomy database 
-TL_DIR=path/to/fastq/files         # path to the toplevel folder containing the fastq files to be processed
-OUT_FOLDER=results                 # path to the folder where the files produced by MSI will be stored
+TL_DIR="path/to/fastq/files"         # path to the toplevel folder containing the fastq files to be processed
+OUT_FOLDER="results"                 # path to the folder where the files produced by MSI will be stored
+THREADS=5                            # maximum number of threads
+METADATAFILE="samplesheet.tsv"       # metadata about each fastq file
+SKIP_BLAST="N"                       # Stop MSI before blast? Yes/No
+LOCAL_BLAST_DB="local_db"            # path to a blast database
+TAXONOMY_DATA_DIR="$MSI_DIR/db"      # path to the taxonomy database 
+CLUSTER_MIN_READS=1                  # minimum number of reads per cluster
+CD_HIT_CLUSTER_THRESHOLD=0.99        # cluster/group reads with a similitiry greater than the given threshould (range from 0 to 1)
+PRIMER_MAX_ERROR=0.2                 # maximum error accepted when matching a primer sequence to the reads
+
+MIN_LEN=40                           # Reads shorter than MIN_LEN are discarded
+MAX_LEN=1000000                      # Reads longer than MAX_LEN are discard
+MIN_QUAL=9                           # Minimum phred score
+
+EXPERIMENT_ID=.                      # can be used to filter the entries in the metadata file 
+## Parameters from isONclust
+# Minmum mapped fraction of read to be included in cluster. 
+CLUST_MAPPED_THRESHOLD=0.70
+# Minmum aligned fraction of read to be included in cluster. Aligned
+# identity depends on the quality of the read. (default: 0.4)
+CLUST_ALIGNED_THRESHOLD=0.40
+
+
+### binning options (passed to metabinkit, check metabinkit manual for details)
+#mbk_Species=
+#mbk_Genus=
+#mbk_Family=
+#mabk_AboveF=
+#mbk_TopSpecies=
+#mbk_TopGenus=
+#mbk_TopFamily=
+#mbk_TopAF=
+#mbk_sp_discard_sp=              
+#mbk_sp_discard_mt2w=
+#mbk_sp_discard_num=
+#mbk_minimal_cols=
+#mbk_no_mbk=
+#mbk_FilterFile=
+#mbk_FilterCol=
+#mbk_FamilyBL=
+#mbk_GenusBL=
+#mbk_SpeciesBL=
+#mbk_SpeciesNegFilter=
+
+### blast options (passed to blast, check blast manual for details)
+#blast_max_hsps= 
+#blast_word_size=
+#blast_perc_identity=
+#blast_qcov_hsp_perc= 
+#blast_gapopen= 
+#blast_gapextend=
+#blast_reward=
+#blast_evalue=
+#blast_penalty=
+#blast_max_target_seqs=
+#blast_taxids_blacklist_files=
+#blast_taxids_poslist_files=
 ```
-Assuming that the file myexp.conf contains the above lines, MSI could be started by running
+Assuming that the file myexp.cfg contains the above lines, MSI could be started by running
 
-`msi.sh -c myexp.conf`
+`msi -c myexp.cfg`
 
 
-### Metadata file
+#### Metadata file
 
 The metadata file (TSV format) provides information for each file to be processed. The file shouls contain the at least the columns barcode_name, sample_id, ss_sample_id, primer_set, primer_f, primer_r, min_length, max_length, target_gene where:
 
@@ -145,6 +195,5 @@ The metadata file (TSV format) provides information for each file to be processe
 - target_gene:
 
 
-## Output files
+#### Output files
 
-# Visualising the results
