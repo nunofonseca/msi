@@ -124,7 +124,6 @@ OUT_FOLDER="results"                 # path to the folder where the files produc
 THREADS=5                            # maximum number of threads
 METADATAFILE="samplesheet.tsv"       # metadata about each fastq file
 SKIP_BLAST="N"                       # Stop MSI before blast? Yes/No
-LOCAL_BLAST_DB="local_db"            # path to a blast database
 TAXONOMY_DATA_DIR="$MSI_DIR/db"      # path to the taxonomy database 
 CLUSTER_MIN_READS=1                  # minimum number of reads per cluster
 CD_HIT_CLUSTER_THRESHOLD=0.99        # cluster/group reads with a similitiry greater than the given threshould (range from 0 to 1)
@@ -165,6 +164,7 @@ CLUST_ALIGNED_THRESHOLD=0.40
 #mbk_SpeciesNegFilter=
 
 ### blast options (passed to blast, check blast manual for details)
+blast_refdb="local_db"            # path to a blast database
 #blast_max_hsps= 
 #blast_word_size=
 #blast_perc_identity=
