@@ -36,7 +36,7 @@ ALL_SOFT="$ALL_TOOLS  blast_db_slow blast_db"
 cutadapt_VERSION=2.7
 isONclust_VERSION=0.0.6
 
-metabinkit_VERSION=0.1.2
+metabinkit_VERSION=0.1.3
 metabinkit_URL=https://github.com/envmetagen/metabinkit/archive/${metabinkit_VERSION}.tar.gz
 
 fastq_utils_VERSION=0.23.0
@@ -66,6 +66,7 @@ function install_blast_db_slow {
 }
 function install_blast_db {
     pinfo "Installing blast database to $INSTALL_DIR/db..."
+    mkdir -p $INSTALL_DIR/db
     pushd $INSTALL_DIR/db
     gem install --verbose ncbi-blast-dbs
     ncbi-blast-dbs nt taxdb
