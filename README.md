@@ -12,7 +12,7 @@
 
 ### Docker
 
-A docker file is provided in the top level of MSI ([Dockerfile](https://github.com/nunofonseca/msi/Dockerfile)) that will wrap everything required to run a MSI analysis. This facilitates the setup and installation of MSI, and track all software versions used in the analyses. See the [Docker userguide](https://docs.docker.com/) for more details.
+A docker file is provided in the top level of MSI ([Dockerfile](https://github.com/nunofonseca/msi/Dockerfile)) that will wrap everything required to run a MSI analysis. This facilitates the setup and installation of MSI, and tracks all software versions used in the analyses. See the [Docker userguide](https://docs.docker.com/) for more details.
 
 Alternatively you may install the software from source following the instructions provided [next](#Installation). A 64 bit computer with an up to date Linux OS installed will be required.
 
@@ -22,7 +22,17 @@ A pre-built image with the latest version of MSI can be dowloaded with the follo
  
 `docker pull nunofonseca/msi:latest`
 
-##### Creating a docker image with MSI
+#### Running MSI in a docker container
+
+A companion script to run MSI in a docker container in non-interactive mode is provided here: ([msi_docker](https://github.com/nunofonseca/msi/scripts/msi_docker))
+
+`scripts/msi_docker params_to_msi1  params_to_msi2 ...`
+
+It accepts the same arguments as the standalone MSI command (see below) with the caveat that the working directory is a subfolder in the container. All files passed to MSI's docker image need to reside in the or subfolders of directory where `msi_docker` was executed.
+
+See the [Docker userguide](https://docs.docker.com/) for more details on how to run containers in interactive and non-interactive mode.
+
+#### Creating a docker image with MSI
 
 A docker image containing MSI can be created, after [getting the sources](#Getting-sources), by running the following command:
 
@@ -31,24 +41,12 @@ A docker image containing MSI can be created, after [getting the sources](#Getti
 
 See the [Docker userguide](https://docs.docker.com/) for more details.
 
-##### How to run MSI in a docker container
-
-A companion script to run MSI in a docker container in non-interactive mode is provided here: ([msi_docker](https://github.com/nunofonseca/msi/scripts/msi_docker))
-
-`scripts/msi_docker params_to_msi1  params_to_msi2 ...`
-
-It accepts the same arguments as the standalone MSI command with the
-caveat that the working directory is a subfolder in the current
-directory called msi_wd/.
-
-See the [Docker userguide](https://docs.docker.com/) for more details on how to run containers in interactive and non-interactive mode.
 
 ### Installation
 
 #### Supported OS
 
 MSI is developed and tested on multiple distributions of Linux (e.g. Fedora, Ubuntu). Consider the Docker container if you use a non-supported OS or OS version.
-
 
 #### Getting sources
 
@@ -64,18 +62,17 @@ Option 2: to use git to download the repository  with the entire code history, t
 
 #### Compile and install
 
-MSI requires several third-party programs to operate. A script (scripts/msi_install.sh) is provided to facilitate the installation of MSI and some dependencies, others need to be already installed in the system (e.g., R 3.6.0 or above, EMBOSS 6.5 or above). A list of system dependencies can be found in MSI's [Dockerfile](https://github.com/nunofonseca/msi/Dockerfile).
+MSI requires several third-party programs in order to work. A script (`scripts/msi_install.sh`) is provided to facilitate the installation of MSI and dependencies. However, some libraries and tools are expected to be installed  (e.g., R 3.6.0 or above, EMBOSS 6.5 or above). A list of system dependencies can be found in MSI's [Dockerfile](https://github.com/nunofonseca/msi/Dockerfile).
 
 To install MSI to a specific folder (e.g., ~/msi) run
 `./scripts/msi_install.sh -i ~/msi`
 
 The installation script will download and install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
 
-Note: Ensure that you have write permission to the parent folder.
 
-#### Configuration
+#### Setup
 
-A file msi_env.sh will be created on the toplevel installation folder (~/msi in the above example) with the configuration setup for the shell. To enable the configuration is necessary to load the configuration with the source command, e.g., 
+A file msi_env.sh will be created on the toplevel installation folder (~/msi in the above example) with the configuration setup for the shell. To enable the configuration is necessary to load the configuration with the `source` command, e.g., 
 
     source $HOME/msi_env.sh
 
@@ -85,15 +82,15 @@ The above command needs to be run each time a terminal is opened or be added to 
 
 #### NCBI taxonomy database
 
-MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz. By default the msi_install.sh script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
+MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz. By default the `msi_install.sh` script will download the database to `$MSI_DIR/db`, where `MSI_DIR` is the folder where MSI was installed.
 
 #### BLAST database
 
-A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command after having MSI installed and configured. 
+A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command (after having MSI properly installed).
 
 `./scripts/msi_install.sh -i $MSI_DIR -x blast_db`
 
-Alternatively, a BLAST database can be easily created from a FASTA file  using the command metabinkit_blastgendb provided by [metabinkit](https://github.com/envmetagen/metabinkit) (and installed as part of MSI). By default, the metabinkit_blastgendb command expects to find the taxid associated to each sequence in the FASTA file in the respective header. The FASTA header should have the format 
+Alternatively, a BLAST database can be easily created from a FASTA file  using the command `metabinkit_blastgendb` provided by [metabinkit](https://github.com/envmetagen/metabinkit) and installed as part of MSI. By default, the `metabinkit_blastgendb` command expects to find the taxid associated to each sequence in the FASTA file in the respective header. The FASTA header should have the format 
 
     >sequence_id taxids=xxxxx;
     
@@ -106,18 +103,19 @@ Alternatively, a BLAST database can be easily created from a FASTA file  using t
 where `raw_data_toplevel_folder` should correspond to the path to the folder where the fastq files (compressed with gzip) may be found. MSI will search for files  with the filename extension .fastq.gz in the top level folder and subfolders.
 
 To get a full list of command line options run
+
 `msi -h`
 
-If running MSI in a docker then the command `msi_docker` may be used instead.
-For instance,
+If running MSI in a docker then the command `msi_docker` may be used instead. For instance,
 
 `msi_docker -h`
 
 #### Parameters
 
-Parameters may be passed to `msi` in a text file using the format `parameter=value`. The file may have comments - all characters after a `#` until the end of the line are ignored.
+Parameters may be passed to `msi` (or `msi_docker`) in a text file using the format `parameter=value`. Note that the file may have comments - all characters after a `#` until the end of the line are ignored.
 
 An example of the contents of a file with the parameters for MSI is shown next.
+
 ```
 TL_DIR="path/to/fastq/files"         # path to the toplevel folder containing the fastq files to be processed
 OUT_FOLDER="results"                 # path to the folder where the files produced by MSI will be stored
@@ -178,6 +176,7 @@ blast_refdb="local_db"            # path to a blast database
 #blast_taxids_blacklist_files=
 #blast_taxids_poslist_files=
 ```
+
 Assuming that the file myexp.cfg contains the above lines, MSI could be started by running
 
 `msi -c myexp.cfg`
@@ -192,8 +191,10 @@ The metadata file (TSV format) provides information for each file to be processe
 - min_length: minimum length of the fragment
 - max_length: maximum length of the fragment
 - target_gene: name of the gene targeted
+- barcode_name: unique identifier for the file (e.g., library name)
 
 Currently the min_length and max_length are not used by MSI to exclude fragments.
+
 
 #### Output files
 
