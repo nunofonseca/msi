@@ -20,13 +20,13 @@ Alternatively you may install the software from source following the instruction
 
 A pre-built image with the latest version of MSI can be dowloaded with the following command:
  
-`docker pull nunofonseca/msi:latest`
+    docker pull nunofonseca/msi:latest
 
 #### Running MSI in a docker container
 
 A companion script to run MSI in a docker container in non-interactive mode is provided here: ([msi_docker](https://github.com/nunofonseca/msi/scripts/msi_docker))
 
-`scripts/msi_docker params_to_msi1  params_to_msi2 ...`
+    scripts/msi_docker params_to_msi1  params_to_msi2 ...
 
 It accepts the same arguments as the standalone MSI command (see below) with the caveat that the working directory is a subfolder in the container. All files passed to MSI's docker image need to reside in the or subfolders of directory where `msi_docker` was executed.
 
@@ -36,7 +36,7 @@ See the [Docker userguide](https://docs.docker.com/) for more details on how to 
 
 A docker image containing MSI can be created, after [getting the sources](#Getting-sources), by running the following command:
 
-`docker build -f Dockerfile -t msi/latest .`
+    docker build -f Dockerfile -t msi/latest .
 
 
 See the [Docker userguide](https://docs.docker.com/) for more details.
@@ -65,7 +65,7 @@ Option 2: to use git to download the repository  with the entire code history, t
 MSI requires several third-party programs in order to work. A script (`scripts/msi_install.sh`) is provided to facilitate the installation of MSI and dependencies. However, some libraries and tools are expected to be installed  (e.g., R 3.6.0 or above, EMBOSS 6.5 or above). A list of system dependencies can be found in MSI's [Dockerfile](https://github.com/nunofonseca/msi/Dockerfile).
 
 To install MSI to a specific folder (e.g., ~/msi) run
-`./scripts/msi_install.sh -i ~/msi`
+    ./scripts/msi_install.sh -i ~/msi
 
 The installation script will download and install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
 
@@ -88,7 +88,7 @@ MSI requires the NCBI taxonomy database available from ftp://ftp.ncbi.nih.gov/pu
 
 A BLAST database may be optionally downloaded from NCBI (nt database) to $MSI_DIR/db by running the following command (after having MSI properly installed).
 
-`./scripts/msi_install.sh -i $MSI_DIR -x blast_db`
+    ./scripts/msi_install.sh -i $MSI_DIR -x blast_db
 
 Alternatively, a BLAST database can be easily created from a FASTA file  using the command `metabinkit_blastgendb` provided by [metabinkit](https://github.com/envmetagen/metabinkit) and installed as part of MSI. By default, the `metabinkit_blastgendb` command expects to find the taxid associated to each sequence in the FASTA file in the respective header. The FASTA header should have the format 
 
@@ -104,11 +104,11 @@ where `raw_data_toplevel_folder` should correspond to the path to the folder whe
 
 To get a full list of command line options run
 
-`msi -h`
+    msi -h
 
 If running MSI in a docker then the command `msi_docker` may be used instead. For instance,
 
-`msi_docker -h`
+    msi_docker -h
 
 #### Parameters
 
@@ -215,13 +215,13 @@ OUTPUT_NAME
 
 Start by generating a blast database by running
 
-`  metabinkit_blastgendb -f tests/fasta/test_refdb.fasta -o quick_test/refdb/db1 -c -t 2`
+    metabinkit_blastgendb -f tests/fasta/test_refdb.fasta -o quick_test/refdb/db1 -c -t 2
 
 A small blast database will be created in the folder `test/refdb/db1`.
 
 In the folder `tests/samples/s4/` there is a fastq file compressed with gzip (`barcode31.fastq.gz`). To process this file run the command:
 
-`msi  -I tests/metadata/metadata2.tsv  -i tests/samples/s4/ -o quick_test/t4 -b quick_test/refdb/db1`
+    msi  -I tests/metadata/metadata2.tsv  -i tests/samples/s4/ -o quick_test/t4 -b quick_test/refdb/db1
 
 The ouput files will be placed in `quick_test/t4`:
  
@@ -232,12 +232,12 @@ The ouput files will be placed in `quick_test/t4`:
 To run the above examples it is assumed that MSI is installed and configured. To use MSI inside a docker is also easy. After downloading MSI:
 
  1. Get the latest docker image with MSI
- 
-    `docker pull nunofonseca/msi:latest`
+
+      docker pull nunofonseca/msi:latest
 
  2. Use msi_docker to run the analysis (assumes that MSI's toplevel folder is the current working directory)
 
-    `./scripts/msi_docker  -i tests/samples/s4/ -o quick_test_docker/t4 -b quick_test/refdb/db1` 
+      ./scripts/msi_docker  -i tests/samples/s4/ -o quick_test_docker/t4 -b quick_test/refdb/db1
 
 
 Note that it may need to be necessary to give permission to docker to access your local folder (in order to access the input files and write the output files). This can be done by running the command
