@@ -98,7 +98,7 @@ Alternatively, a BLAST database can be easily created from a FASTA file  using t
 
 ### Running MSI
 
-`msi [options] -c params_file.cfg -i raw_data_toplevel_folder -o output_folder`
+    msi [options] -c params_file.cfg -i raw_data_toplevel_folder -o output_folder
 
 where `raw_data_toplevel_folder` should correspond to the path to the folder where the fastq files (compressed with gzip) may be found. MSI will search for files  with the filename extension .fastq.gz in the top level folder and subfolders.
 
@@ -179,7 +179,7 @@ blast_refdb="local_db"            # path to a blast database
 
 Assuming that the file myexp.cfg contains the above lines, MSI could be started by running
 
-`msi -c myexp.cfg`
+    msi -c myexp.cfg
 
 #### Metadata file
 
@@ -233,11 +233,11 @@ To run the above examples it is assumed that MSI is installed and configured. To
 
  1. Get the latest docker image with MSI
 
-      docker pull nunofonseca/msi:latest
+        docker pull nunofonseca/msi:latest
 
  2. Use msi_docker to run the analysis (assumes that MSI's toplevel folder is the current working directory)
 
-      ./scripts/msi_docker  -i tests/samples/s4/ -o quick_test_docker/t4 -b quick_test/refdb/db1
+        ./scripts/msi_docker  -i tests/samples/s4/ -o quick_test_docker/t4 -b quick_test/refdb/db1
 
 
 Note that it may need to be necessary to give permission to docker to access your local folder (in order to access the input files and write the output files). This can be done by running the command
