@@ -6,6 +6,7 @@
 3. [Manual installation](#Installation)
 4. [Databases](#Databases)
 5. [Running MSI](#Running-MSI)
+6. [How it works](#How-it-works)
 
 
 ### Overview
@@ -184,9 +185,9 @@ Assuming that the file myexp.cfg contains the above lines, MSI could be started 
 
     msi -c myexp.cfg
 
-#### Metadata file
+#### Primer information
 
-The metadata file (TSV format) provides information for each file to be processed by MSI. The file should contain the columns barcode_name, sample_id, ss_sample_id, primer_set, primer_f, primer_r, min_length, max_length, target_gene where:
+The primer information is provided in a metadata file (TSV format) with information for each file to be processed by MSI. The file should contain the columns barcode_name, sample_id, ss_sample_id, primer_set, primer_f, primer_r, min_length, max_length, target_gene where:
 
 - primer_set: unique identifier of the primer
 - primer_f:  5'end primer sequence (forward primer)
@@ -246,4 +247,8 @@ To run the above examples it is assumed that MSI is installed and configured. To
 Note that it may need to be necessary to give permission to docker to access your local folder (in order to access the input files and write the output files). This can be done by running the command
 
     chcon -Rt svirt_sandbox_file_t $PWD
+
+#### How it works
+
+<img src="images/MSI_steps.png"  height="400"  >
 
