@@ -209,7 +209,7 @@ OUTPUT_NAME
 | Type    |  File/Dirname   | Description    | 
 | --- | --- | --- |
 | dirs | fastq_file_prefix* | One folder per input fastq file |
-| files | *.versions.txt | Versions of the software used |
+| files | *.versions.txt | Contains the versions of the software used |
 | file | results.fasta.gz | fasta file with the clustered/corrected reads|
 | file | bin.tsv.gz | Binning table produced by metabinkit (tsv format) |
 | file | binres.tsv.gz | tsv file combining the binning results from metabinkit with the results.tsv.gz file |
