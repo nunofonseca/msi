@@ -10,6 +10,9 @@
 
 ### Overview
 
+<img src="images/MSI_steps_sum.png" align="left" height="158" width="68" > was designed for sequencing reads with higher error rates (e.g., as the ones produced by Nanopore's sequencers) but also works with reads with lower error rates (e.g., Illumina). MSI performs the five operations outlined in the Figure. As input MSI requires FASTQ files (with the reads), and optionally a file with information about the primers (TSV) used and a BLAST database. As output, MSI will produce a fasta file with the centroids of the clusters based on the polished reads (the number of reads in each cluster is kept in the header), and a TSV file with information about each cluster. If a file is provided with primer information, then the adapaters are removed from the polished sequences (a record is kept of which adapter/primer was deleted from each sequence). Finally the polished sequences, after primer removal, are aligned using BLAST against the database provided and the resulting hits binned (associate a taxon to each sequence when possible) and saved to a TSV file.
+
+
 ### Docker
 
 A docker file is provided in the top level of MSI ([Dockerfile](https://github.com/nunofonseca/msi/Dockerfile)) that will wrap everything required to run a MSI analysis. This facilitates the setup and installation of MSI, and tracks all software versions used in the analyses. See the [Docker userguide](https://docs.docker.com/) for more details.
