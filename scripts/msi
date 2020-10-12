@@ -119,13 +119,14 @@ mbk_TopSpecies=100
 mbk_TopGenus=1
 mbk_TopFamily=1
 mbk_TopAF=1
+mbk_rm_predicted=NULL
 #mbk_no_mbk=
 mbk_sp_discard_sp=
 #taxonomy database
 mbk_db=$TAXONOMY_DATA_DIR
 
 ## no spaces next to ,
-MBK_VALID_PARAMS="Species,Genus,Family,AboveF,TopSpecies,TopGenus,TopFamily,TopAF,db,sp_discard_sp,sp_discard_mt2w,sp_discard_num,minimal_cols,no_mbk,FilterFile,FilterCol,FamilyBL,GenusBL,SpeciesBL,SpeciesNegFilter"
+MBK_VALID_PARAMS="Species,Genus,Family,AboveF,TopSpecies,TopGenus,TopFamily,TopAF,db,sp_discard_sp,sp_discard_mt2w,sp_discard_num,minimal_cols,no_mbk,FilterFile,FilterCol,FamilyBL,GenusBL,SpeciesBL,SpeciesNegFilter,rm_predicted"
 
 ######################
 ## check for commands
