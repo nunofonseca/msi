@@ -107,7 +107,7 @@ blast_refdb=
 ## no spaces next to ,
 BLAST_VALID_PARAMS="refdb,outfile,infasta,max_hsps,word_size,perc_identity,qcov_hsp_perc,gapopen,gapextend,reward,evalue,penalty,max_target_seqs,taxids_blacklist_files,taxids_poslist_files,task"
 
-blast_outfmt="6 qseqid sseqid evalue bitscore pident nident mismatch qlen length sgi sacc staxids ssciname scomnames stitle"
+blast_outfmt="6 qseqid sseqid evalue bitscore pident nident mismatch qlen length sgi sacc staxid ssciname scomnames stitle"
 
 #############
 ## metabinkit
@@ -239,12 +239,12 @@ function get_params2line {
 function validate_params {
     local tool=$1
     local expected_params=$2
-    echo get_params_tool $tool $(echo $expected_params| sed "s/ //g")
-    local nv=$(get_params_tool $tool $(echo $expected_params| sed "s/ //g"))
-    local notv="$nv"
-    if [ "$notv-" != "-" ]; then	
-	echo "Warning: ignoring unrecognised params for $tool: $(echo $nv)"
-    fi
+    #echo get_params_tool $tool $(echo $expected_params| sed "s/ //g")
+    _xxxx=$(get_params_tool $tool $(echo $expected_params| sed "s/ //g"))
+    #local notv="$nv"
+    #if [ "$notv-" != "-" ]; then	
+    #echo "Warning: ignoring unrecognised params for $tool: $(echo $nv)"
+    #fi
 }
 
 function get_blast_options {
