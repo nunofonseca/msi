@@ -33,7 +33,7 @@ ALL_SOFT="$ALL_TOOLS  blast_db_slow blast_db"
 #ALL_TOOLS="isONclust minimap2 racon cd-hit R_packages msi"
 
 # upgraded 2019-12-04:
-cutadapt_VERSION=2.7
+cutadapt_VERSION=2.10
 # https://pypi.org/project/isONclust/
 isONclust_VERSION=0.0.6
 
