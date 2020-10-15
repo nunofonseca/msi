@@ -34,15 +34,17 @@ ALL_SOFT="$ALL_TOOLS  blast_db_slow blast_db"
 
 # upgraded 2019-12-04:
 cutadapt_VERSION=2.7
+# https://pypi.org/project/isONclust/
 isONclust_VERSION=0.0.6
+
 
 metabinkit_VERSION=0.1.7
 metabinkit_URL=https://github.com/envmetagen/metabinkit/archive/${metabinkit_VERSION}.tar.gz
 
-fastq_utils_VERSION=0.23.0
+fastq_utils_VERSION=0.24.1
 fastq_utils_URL=https://github.com/nunofonseca/fastq_utils/archive/$fastq_utils_VERSION.tar.gz
 
-FASTQC_VERSION=0.11.8
+FASTQC_VERSION=0.11.9
 FASTQC_URL=http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v${FASTQC_VERSION}.zip
 
 ##
@@ -53,6 +55,10 @@ minimap2_URL="https://github.com/lh3/minimap2/releases/download/v$minimap2_VERSI
 CD_HIT_VERSION=4.8.1
 CD_HIT_DATE=2019-0228
 CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSION/cd-hit-v${CD_HIT_VERSION}-$CD_HIT_DATE.tar.gz
+
+#https://github.com/lbcb-sci/racon
+#1.4.13
+#
 
 ####################################################################
 ##
@@ -382,7 +388,8 @@ export MSI_DIR=$INSTALL_DIR
 set +u
 ## Python
 export PYTHONUSERBASE=\$MSI_DIR/python
-export PYTHONPATH=$MSI_DIR/lib64/$python_dir/site-packages:\$MSI_DIR/lib/$python_dir/site-packages:\$MSI_DIR/lib64/$python3_dir/site-packages:\$MSI_DIR/lib/$python3_dir/site-packages:$PYTHONPATH
+export PYTHONPATH=$MSI_DIR/:$PYTHONPATH
+## lib64/$python_dir/site-packages:\$MSI_DIR/lib/$python_dir/site-packages:\$MSI_DIR/lib64/$python3_dir/site-packages:\$MSI_DIR/lib/$python3_dir/site-packages:$PYTHONPATH
 ## R packages
 export R_LIBS=\$MSI_DIR/Rlibs:\$R_LIBS
 PATH=\$MSI_DIR/python/bin:\$PATH
