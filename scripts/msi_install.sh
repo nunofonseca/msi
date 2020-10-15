@@ -56,9 +56,9 @@ CD_HIT_VERSION=4.8.1
 CD_HIT_DATE=2019-0228
 CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSION/cd-hit-v${CD_HIT_VERSION}-$CD_HIT_DATE.tar.gz
 
-#https://github.com/lbcb-sci/racon
-#1.4.13
 #
+racon_VERSION=1.4.13
+racon_URL="https://github.com/lbcb-sci/racon/releases/download/$racon_VERSION/racon-v${racon_VERSION}.tar.gz"
 
 ####################################################################
 ##
@@ -181,9 +181,11 @@ function install_racon {
     pinfo "Installing racon..."
     pushd $TEMP_FOLDER
     rm -f tmp.tar.gz
-    git clone --recursive https://github.com/isovic/racon.git racon
-    mkdir -p racon/build
-    pushd racon/build
+    wget -c $racon_URL -O tmp.tar.gz
+    tar -xzvf tmp.tar.gz
+    cd racon-v${racon_VERSION}
+    mkdir -p build
+    pushd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
     make
     cp bin/racon $INSTALL_BIN
