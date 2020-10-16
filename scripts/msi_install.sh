@@ -60,6 +60,7 @@ CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSIO
 racon_VERSION=1.4.13
 racon_URL="https://github.com/lbcb-sci/racon/releases/download/$racon_VERSION/racon-v${racon_VERSION}.tar.gz"
 
+envir_name=test_msi_env
 ####################################################################
 ##
 function install_blast_db_slow {
@@ -286,6 +287,9 @@ function usage {
     echo "Usage: msi_install.sh  [-x all|tool_name -i toplevel_installation_folder]  ";
     echo " -x software: install/update software.";
     echo " -i dir : install/update all files to directory 'dir' (default: $PWD/MSI)";
+    echo " -C     - Conda installation mode"
+    echo " -E     - install msi in a conda environment [$envir_name]"
+    echo " -h     - print this help information"
 }
 
 function check_system_deps {
@@ -337,16 +341,22 @@ fi
 ## by default install all software
 MODE=all
 DEBUG=0
+CONDA_INSTALL=0
+CONDA_ENVIR=0
+set -x
 set +u
-while getopts "i:x:hHDd"  Option
+while getopts "i:x:hHDdCE"  Option
 do
     case $Option in
+	C) CONDA_INSTALL=1;;
+	E) CONDA_ENVIR=1;;
 	i) INSTALL_DIR=$OPTARG;;
 	x) MODE=$OPTARG;;
 	d) DEBUG=1;;
 	D) msi_to_docker;;
 	h ) usage; exit;;
 	H ) usage; exit;;
+	* ) usage; exit 1;;
     esac
 done
 
@@ -358,7 +368,12 @@ else
 fi
 
 
-INSTALL_DIR=$(readlink -f $INSTALL_DIR)
+if [ "x`uname`" == "xLinux" ] ; then
+    ## readlink does not work in MacOS
+    ## 
+    INSTALL_DIR=$(readlink -f $INSTALL_DIR)
+fi
+
 MSI_DIR=$INSTALL_DIR
 
 
@@ -409,12 +424,43 @@ fi
 
 source $MSI_ENV_FILE
 
+## 
+## create a bioconda environment with msi
+if [ "$CONDA_ENVIR-" == "1-" ]; then
+    echo "You should have run `conda init bash` first"
+    set +x
+    conda create -y --name $envir_name
+    #conda install -n $envir_name -c bioconda  -c conda-forge python=3.7 -y
+    conda install -n $envir_name -c bioconda  -c conda-forge python=3.8 -y
+    conda install -n $envir_name -c bioconda  -c conda-forge metabinkit=$metabinkit_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge cutadapt=$cutadapt_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge isOnclust=$isONclust_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge fastq_utils=$fastq_utils_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge fastqc=$fastqc_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge minimap2=$minimap2_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge cd-hit=$cd_hit_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge racon=$racon_VERSION -y
+    #1.4.13-he513fc3_0
+    conda install -n $envir_name -c bioconda -c conda-forge pilon=1.23 -y
+    echo "type
+conda activate $envir_name
+to activate the conda environment and then run
+msi_install.sh -i \$CONDA_PREFIX -x msi"
+    INSTALL_DIR=$CONDA_PREFIX
+    exit 0
+fi
+
+if [ "$CONDA_INSTALL-" == "1-" ]; then
+    install_msi
+    #install_R_packages
+    exit 0
+fi
 x="-$(echo $ALL_SOFT make|sed -E 's/\s+/-|-/g')|-all-"
 echo $x
 if [[ "-$MODE-" =~ ^($x) ]]; then
     pinfo "Installation mode: $MODE"
 else
-    pinfo Valid values for -x: $ALL_TOOLS
+    pinfo Valid values for -x: $ALL_SOFT
     echo ERROR: invalid value $MODE for -x parameter
     rm -rf $TEMP_FOLDER
     exit 1
