@@ -97,6 +97,10 @@ mbk_TopSpecies=100
 mbk_TopGenus=1
 mbk_TopFamily=1
 mbk_TopAF=1
+mbk_rm_predicted=ssciname
+mbk_sp_discard_sp=
+mbk_mt2w=
+mbk_sp_discard_num=
 EOF
 
 must_succeed "msi  -c $TMPDIR/msi.params"
