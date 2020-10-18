@@ -826,14 +826,16 @@ function process_fastq {
 	    pinfo "skipping trimming adapters and filter by length (already done)"
 	else
 	    load_metadata $METADATAFILE $(basename $fq_file)
-	    if [ "${MD[PRIMER_SET]^^}-" == "NONE-" ]; then
+	    if [ "${MD[PRIMER_SET]^^}-" == "NONE-" ] ||
+	       [ "${MD[PRIMER_SET]^^}-" == "-" ] ; then
 		pinfo "No primers for $fq_file"
-		sed  -E "s/size=(.*)$/\1/;s/$/:adapter=none:/" $CENTROIDS1 > $CENTROIDS.tmp && mv $CENTROIDS.tmp $CENTROIDS
+		sed  -E "s/ /_/g;s/size=(.*)$/\1/;s/$/:adapter=none:/" $CENTROIDS1 > $CENTROIDS.tmp && mv $CENTROIDS.tmp $CENTROIDS
+
 	    else
 		pinfo "Calling cutadapter"
 		# 2.run cut adaptor
-		#   2.1 one single primer - we get one single file
-		#   2.2 multiple primerrs - we get multiple files	    
+		#   2.1 one single primer -> we get one single file
+		#   2.2 multiple primers -> we get multiple files	    
 		new_file=$(remove_split_by_primer $fq_file $CENTROIDS1 fasta)
 		# filter by length (min and max defined for all samples)
 		$CUTA_CMD -m $MIN_LEN -M $MAX_LEN -o $new_file.tmp $new_file
