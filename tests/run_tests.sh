@@ -2,12 +2,20 @@
 
 PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 
+PATH2MSI=$(which msi)
+if [ "$MSI_DIR-" == "-" ]; then
+    if [ "$PATH2MSI-" == "-" ]; then
+	# use current folder (last resort)
+	MSI_DIR=$(readlink -f $PATH2SCRIPT/..)
+    else
+	MSI_DIR=$(readlink -f $(dirname $PATH2MSI)/..)
+    fi
+fi
+
+export MSI_DIR=$MSI_DIR
+
 set -u
 source $PATH2SCRIPT/tests_aux.sh
-
-if [ "$MSI_DIR-" == "-" ]; then
-    MSI_DIR=$(readlink -f $PATH2SCRIPT/..)
-fi
 
 ## use the most recent version of the scripts
 PATH=$PATH2SCRIPT/../scripts:$PATH
@@ -25,9 +33,9 @@ NULL_REDIR=/dev/stdout
 
 echo "*** msi tests - db generation"
 ## use metabinkit wrapper
-must_succeed "metabinkit_blastgendb -f $PATH2TESTS/fasta/test_refdb.fasta -o $TMPDIR/refdb/db1 -c -t 2"
-
-
+must_succeed "metabinkit_blastgendb -f $PATH2TESTS/fasta/test_refdb.fasta -o $TMPDIR/refdb/db1 -t 2"
+must_succeed "metabinkit_blastgendb -f $PATH2TESTS/fasta/test_refdb.fasta -o $TMPDIR/refdb/db2 -t 2"
+#must_succeed "metabinkit_blastgendb -f $PATH2TESTS/fasta/test_refdb.fasta -o $TMPDIR/refdb/db2 -c -t 2"
 
 echo "*** msi tests"
 
@@ -41,7 +49,6 @@ must_fail "msi -i tests/samples/s1/ -I tests/metadata/metadatae1.tsv -S &> $NULL
 # fastq file not in metadata
 must_fail "msi -I tests/metadata/metadata1.tsv  -i tests/samples/s1/ -o $TMPDIR/tt0 &> $NULL_REDIR"
 
-
 ## skip blast
 must_succeed "msi  -I tests/metadata/metadata1.tsv -S -i tests/samples/s1/ -o $TMPDIR/t1"
 must_succeed "zdiff -q ./tests/out/t1.running.stats.tsv.gz $TMPDIR/t1/running.stats.tsv.gz"
@@ -51,10 +58,10 @@ must_succeed "zdiff -q $TMPDIR/t2/running.stats.tsv.gz $TMPDIR/t2/running.stats.
 
 
 # no results for binning 
-must_fail "msi  -I tests/metadata/metadata1.tsv  -i tests/samples/s1/ -o $TMPDIR/t1 -b $TMPDIR/refdb/db1"
+must_succeed "msi  -I tests/metadata/metadata1.tsv  -i tests/samples/s1/ -o $TMPDIR/t1 -b $TMPDIR/refdb/db1"
 
 # try again with a new database
-must_fail "msi  -I tests/metadata/metadata1.tsv  -i tests/samples/s1/ -o $TMPDIR/t1 -b $TMPDIR/refdb/db2"
+must_succeed "msi  -I tests/metadata/metadata1.tsv  -i tests/samples/s1/ -o $TMPDIR/t1 -b $TMPDIR/refdb/db2"
 
 ## works
 must_succeed "msi  -I tests/metadata/metadata2.tsv  -i tests/samples/s4/ -o $TMPDIR/t4 -b $TMPDIR/refdb/db1"
