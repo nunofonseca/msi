@@ -126,7 +126,7 @@ mbk_sp_discard_sp=
 mbk_db=$TAXONOMY_DATA_DIR
 
 ## no spaces next to ,
-MBK_VALID_PARAMS="Species,Genus,Family,AboveF,TopSpecies,TopGenus,TopFamily,TopAF,db,sp_discard_sp,sp_discard_mt2w,sp_discard_num,minimal_cols,no_mbk,FilterFile,FilterCol,FamilyBL,GenusBL,SpeciesBL,SpeciesNegFilter,rm_predicted"
+MBK_VALID_PARAMS="Species,Genus,Family,AboveF,TopSpecies,TopGenus,TopFamily,TopAF,db,sp_discard_sp,sp_discard_mt2w,sp_discard_num,minimal_cols,no_mbk,FilterFile,FilterCol,FamilyBL,GenusBL,SpeciesBL,SpeciesNegFilter,rm_predicted,species.neg"
 
 ######################
 ## check for commands
