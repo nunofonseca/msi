@@ -3,9 +3,9 @@
 
 1. [Overview](#Overview)
 2. [Installation](#Installation)
-2.1. [Conda](#Conda)
-2.2. [Docker](#Docker)
-2.3. [Manual installation](#Manual-Installation)
+     1. [Conda](#Conda)
+     2. [Docker](#Docker)
+     3. [Manual installation](#Manual-Installation)  
 3. [Databases](#Databases)
 4. [Running MSI](#Running-MSI)
 5. [How it works](#How-it-works)
