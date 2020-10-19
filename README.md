@@ -1,4 +1,4 @@
-## msi ![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) [![Dockerhub](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/nunofonseca/msi/tags/) [![DOI](https://zenodo.org/badge/191382419.svg)](https://zenodo.org/badge/latestdoi/191382419) 
+## msi ![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) [![Dockerhub](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/nunofonseca/msi/tags/) [![DOI](https://zenodo.org/badge/191382419.svg)](https://zenodo.org/badge/latestdoi/191382419) [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/version.svg)](https://anaconda.org/bioconda/msi) [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda) 
 
 
 1. [Overview](#Overview)
@@ -13,6 +13,17 @@
 
 <img src="images/MSI_steps_sum.png" align="left" height="158" width="68" > was designed for sequencing reads with higher error rates (e.g., as the ones produced by Nanopore's sequencers) but also works with reads with lower error rates (e.g., Illumina). MSI performs the five operations outlined in the Figure. As input MSI requires FASTQ files (with the reads), and optionally a file with information about the primers (TSV) used and a BLAST database. As output, MSI will produce a fasta file with the centroids of the clusters based on the polished reads (the number of reads in each cluster is kept in the header), and a TSV file with information about each cluster. If a file is provided with primer information, then the adapaters are removed from the polished sequences (a record is kept of which adapter/primer was deleted from each sequence). Finally the polished sequences, after primer removal, are aligned using BLAST against the database provided and the resulting hits binned (associate a taxon to each sequence when possible) and saved to a TSV file.
 
+### Conda   [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
+
+MSI is available as a conda package in [Bioconda](https://anaconda.org/bioconda). Simply run the following commands to install MSI
+
+     conda install -c bioconda msi
+     conda activate base
+
+or you may also try this if you encounter problems with the command above
+
+     conda create -n msi_env -c bioconda -c conda-forge msi
+     conda activate msi_env 
 
 ### Docker
 
