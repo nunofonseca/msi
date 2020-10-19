@@ -1,0 +1,109 @@
+#!/usr/bin/env Rscript
+# -*- mode: R;-*-
+# =========================================================
+# Copyright 2020
+#
+#
+# This is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this file.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# =========================================================
+
+###################################################################
+## Load auxiliary code
+dir2script <- normalizePath(dirname(strsplit(split="=",x=grep("--file=",fixed=TRUE,value=TRUE,x=commandArgs(trailingOnly = FALSE)))[[1]][2]))
+##
+#msi.local.lib.path <- paste0(dir2script,"/../R")
+#source(paste0(dir2script,"/../R/msi.R"))
+
+pinfo <- function(...,verbose=TRUE) {
+    if (verbose) message(paste0("[info] ",...,""))
+}
+
+perror <- function(...,fatal=FALSE) {
+    message(paste0("[ERROR] ",...,""))
+    if (fatal) quit(status=1)
+}
+
+
+library(optparse)
+############################################################
+
+option_list = list(
+    make_option(c("-i", "--input"), type="character", default=NULL, 
+                help="TSV file name", metavar="filename"),
+    make_option(c("-o", "--out"), type="character", default="taxa_table", 
+                help="output file prefix", metavar="filename")
+
+    #make_option(c("-v","--version"), action = "store_true", default = FALSE,help = "print version and exit"),
+); 
+ 
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
+
+#if ( opt$version ) {
+#    print.version()
+#    quit(status=0)
+#}
+if (is.null(opt$input)){
+  print_help(opt_parser)
+  stop("--input parameter should be provided.\n", call.=FALSE)
+}
+
+
+#print.version()
+#opt <- list()
+#opt$input <- "msi_tests_res/t5a/binres.tsv.gz"
+#opt$out <- "lll"
+library(data.table)
+
+pinfo("Loading ",opt$input,"...")
+msi<-data.table::fread(opt$input,data.table = F,fill = TRUE)
+pinfo("Loading ",opt$input,"...done.")
+
+msi$taxon<-paste(msi$K,msi$P,msi$C,msi$O,msi$F,msi$G,msi$S,sep = ";")
+msi$taxon<-gsub(";;;;;;","no_hits;no_hits;no_hits;no_hits;no_hits;no_hits;no_hits",msi$taxon)
+#msi$taxon<-gsub(";;;",";NA;NA;",msi$taxon)
+
+## keep no adapter for now
+#msi<-msi[msi$adapter!="no_adapter",]
+
+msi.split<-split(msi,f=msi$adapter)
+
+pinfo(paste(unique(paste(msi$adapter," ")),sep=",",collapse=","))
+
+
+nn <- names(msi.split)
+#i <- 1
+for(i in 1:length(msi.split)){
+    tt <- as.data.frame(tidyr::pivot_wider(
+                                   msi.split[[i]][,c("sample","taxon","nreads")],
+                                   names_from = sample,
+                                   values_from=nreads,
+                                   values_fill = 0,
+                                   values_fn=sum))
+
+    ofile <- paste(paste(opt$out,nn[i],sep="_"),".tsv",sep="")
+    pinfo("Creating ",ofile,"...")
+    write.table(x=tt,file=ofile,sep="\t",quote=FALSE,col.names=TRUE,row.names=FALSE)
+    pinfo("Creating ",ofile,"...done.")
+    
+}
+
+
+vfile <- paste0(opt$out,".versions.txt")
+pinfo("information stats written to ",vfile)
+sink(file=vfile)
+sessionInfo()
+q(status=0)
