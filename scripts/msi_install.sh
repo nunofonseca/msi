@@ -441,7 +441,7 @@ if [ "$CONDA_ENVIR-" == "1-" ]; then
     conda install -n $envir_name -c bioconda  -c conda-forge cd-hit=$cd_hit_VERSION -y
     conda install -n $envir_name -c bioconda  -c conda-forge racon=$racon_VERSION -y
     #1.4.13-he513fc3_0
-    conda install -n $envir_name -c bioconda -c conda-forge pilon=1.23 -y
+    #conda install -n $envir_name -c bioconda -c conda-forge pilon=1.23 -y
     echo "type
 conda activate $envir_name
 to activate the conda environment and then run
