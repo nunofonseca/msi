@@ -121,7 +121,7 @@ mbk_TopFamily=1
 mbk_TopAF=1
 #mbk_no_mbk=
 ## no value parameters - to enable just define them
-mbk_rm_predicted=
+#mbk_rm_predicted=
 mbk_sp_discard_sp=
 #mbk_mt2w=
 #mbk_sp_discard_num=
