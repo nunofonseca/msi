@@ -2,18 +2,23 @@
 
 
 1. [Overview](#Overview)
-2. [Docker](#Docker)
-3. [Manual installation](#Installation)
-4. [Databases](#Databases)
-5. [Running MSI](#Running-MSI)
-6. [How it works](#How-it-works)
+2. [Installation](#Installation)
+2.1. [Conda](#Conda)
+2.2. [Docker](#Docker)
+2.3. [Manual installation](#Manual-Installation)
+3. [Databases](#Databases)
+4. [Running MSI](#Running-MSI)
+5. [How it works](#How-it-works)
 
 
 ### Overview
 
 <img src="images/MSI_steps_sum.png" align="left" height="158" width="68" > was designed for sequencing reads with higher error rates (e.g., as the ones produced by Nanopore's sequencers) but also works with reads with lower error rates (e.g., Illumina). MSI performs the five operations outlined in the Figure. As input MSI requires FASTQ files (with the reads), and optionally a file with information about the primers (TSV) used and a BLAST database. As output, MSI will produce a fasta file with the centroids of the clusters based on the polished reads (the number of reads in each cluster is kept in the header), and a TSV file with information about each cluster. If a file is provided with primer information, then the adapaters are removed from the polished sequences (a record is kept of which adapter/primer was deleted from each sequence). Finally the polished sequences, after primer removal, are aligned using BLAST against the database provided and the resulting hits binned (associate a taxon to each sequence when possible) and saved to a TSV file.
 
-### Conda   [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
+### Installation
+
+
+#### Conda   [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
 
 MSI is available as a conda package in [Bioconda](https://anaconda.org/bioconda). Simply run the following commands to install MSI
 
@@ -25,19 +30,19 @@ or you may also try this if you encounter problems with the command above
      conda create -n msi_env -c bioconda -c conda-forge msi
      conda activate msi_env 
 
-### Docker
+#### Docker
 
 A docker file is provided in the top level of MSI ([Dockerfile](https://github.com/nunofonseca/msi/Dockerfile)) that will wrap everything required to run a MSI analysis. This facilitates the setup and installation of MSI, and tracks all software versions used in the analyses. See the [Docker userguide](https://docs.docker.com/) for more details.
 
 Alternatively you may install the software from source following the instructions provided [next](#Installation). A 64 bit computer with an up to date Linux OS installed will be required.
 
-#### Pre-built docker image with MSI
+##### Pre-built docker image with MSI
 
 A pre-built image with the latest version of MSI can be dowloaded with the following command:
  
     docker pull nunofonseca/msi:latest
 
-#### Running MSI in a docker container
+##### Running MSI in a docker container
 
 A companion script to run MSI in a docker container in non-interactive mode is provided here: ([msi_docker](https://github.com/nunofonseca/msi/scripts/msi_docker))
 
@@ -47,7 +52,7 @@ It accepts the same arguments as the standalone MSI command (see below) with the
 
 See the [Docker userguide](https://docs.docker.com/) for more details on how to run containers in interactive and non-interactive mode.
 
-#### Creating a docker image with MSI
+##### Creating a docker image with MSI
 
 A docker image containing MSI can be created, after [getting the sources](#Getting-sources), by running the following command:
 
@@ -56,14 +61,13 @@ A docker image containing MSI can be created, after [getting the sources](#Getti
 
 See the [Docker userguide](https://docs.docker.com/) for more details.
 
+#### Manual Installation
 
-### Installation
-
-#### Supported OS
+##### Supported OS
 
 MSI is developed and tested on multiple distributions of Linux (e.g. Fedora, Ubuntu). Consider the Docker container if you use a non-supported OS or OS version.
 
-#### Getting sources
+##### Getting sources
 
 Option 1: download the latest source release tarball from https://github.com/nunofonseca/msi/releases, and then from your download directory type:
 
@@ -75,7 +79,7 @@ Option 2: to use git to download the repository  with the entire code history, t
     git clone https://github.com/nunofonseca/msi.git
     cd msi
 
-#### Compile and install
+##### Compile and install
 
 MSI requires several third-party programs in order to work. A script (`scripts/msi_install.sh`) is provided to facilitate the installation of MSI and dependencies. However, some libraries and tools are expected to be installed  (e.g., R 3.6.0 or above, EMBOSS 6.5 or above). A list of system dependencies can be found in MSI's [Dockerfile](https://github.com/nunofonseca/msi/Dockerfile).
 
@@ -85,7 +89,7 @@ To install MSI to a specific folder (e.g., ~/msi) run
 The installation script will download and install third party software used by MSI (e.g., R packages, blast, etc) therefore it will need internet acess and will take several minutes to conclude.
 
 
-#### Setup
+##### Setup
 
 A file msi_env.sh will be created on the toplevel installation folder (~/msi in the above example) with the configuration setup for the shell. To enable the configuration is necessary to load the configuration with the `source` command, e.g., 
 
