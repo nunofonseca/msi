@@ -195,13 +195,13 @@ Row
 -----------------------------------------------------------------------
 
 ### Initial data {data-width=700}
-```{r}
-DT::datatable(all.data[,-c(21)], 
-              options = list(
-                autoWidth = TRUE,
-                bPaginate = TRUE
-))
-```
+#```{r}
+#DT::datatable(all.data[,-c(21)], 
+#              options = list(
+#                autoWidth = TRUE,
+#                bPaginate = TRUE
+#))
+#```
 
 
 Summary results
@@ -671,8 +671,8 @@ Row
 ### Top X hits per sample (heatmap)
 
 ```{r, fig.height=8}
-library(d3heatmap)
-renderD3heatmap({
+library(heatmaply)
+renderPlotly({
   x<-get.top.id.species.matrix()
   #head(dd)
   #x<-dd
@@ -684,7 +684,7 @@ renderD3heatmap({
   x<-x[,-c(1,2,3,4,5,6),drop=FALSE]
     print(head(x))
   print(typeof(x))
-  d3heatmap(x,colors = colors,xaxis_font_size="10pt")
+  heatmaply(x,colors = colors,xaxis_font_size="10pt")
   ##scale = "column")
 })
 ```
@@ -696,8 +696,8 @@ Row
 ### Sample level correlation
 
 ```{r, fig.height=8}
-library(d3heatmap)
-renderD3heatmap({
+library(heatmaply)
+renderPlotly({
   x<-get.top.id.species.matrix()
   rownames(x)<-x$species
   colfunc <- colorRampPalette(c("lightgray","darkblue"))
@@ -706,7 +706,7 @@ renderD3heatmap({
 
   x<-x[,-c(1,2,3,4,5,6),drop=FALSE]
   xc<-cor(x,method="spearman")
-  p<-d3heatmap(xc,colors = colors,xaxis_font_size="10pt")
+  p<-heatmaply(xc,colors = colors,xaxis_font_size="10pt")
   p
   ##scale = "column")
 })
@@ -741,7 +741,6 @@ renderPlot({
   
 renderPlot({
   
-
   x<-get.top.id.species.matrix()
   suppressPackageStartupMessages(library("gplots"))
 #install.packages("gplots")
@@ -753,10 +752,10 @@ renderPlot({
   rownames(x2)<-x$species
   x2<-x2[,-c(1,2,3),drop=FALSE]
   xc<-cor(x2,method="spearman")
-  library(d3heatmap)
+  library(heatmaply)
   #if (!require("devtools")) install.packages("devtools")
   #devtools::install_github("rstudio/d3heatmap")
-  d3heatmap(as.matrix(xc), scale = "column", colors = "Spectral")
+  heatmaply(as.matrix(xc), scale = "column", colors = "Spectral")
 },height=1000,width=1000)
 ```
 
