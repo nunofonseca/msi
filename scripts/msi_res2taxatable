@@ -79,8 +79,10 @@ msi$taxon<-gsub(";;;;;;","no_hits;no_hits;no_hits;no_hits;no_hits;no_hits;no_hit
 ## keep no adapter for now
 #msi<-msi[msi$adapter!="no_adapter",]
 
+if ( ! "adapter" %in% colnames(msi) ) {
+    msi$adapter <-  "none"
+}
 msi.split<-split(msi,f=msi$adapter)
-
 pinfo(paste(unique(paste(msi$adapter," ")),sep=",",collapse=","))
 
 
