@@ -1,5 +1,7 @@
 ## msi 
-![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) [![Dockerhub](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/nunofonseca/msi/tags/) [![DOI](https://zenodo.org/badge/191382419.svg)](https://zenodo.org/badge/latestdoi/191382419) [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/version.svg)](https://anaconda.org/bioconda/msi) [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
+![Docker](https://github.com/nunofonseca/msi/workflows/Docker/badge.svg?branch=master) [![License](http://img.shields.io/badge/license-GPL%203-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html) [![Dockerhub](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/nunofonseca/msi/tags/) [![DOI](https://zenodo.org/badge/191382419.svg)](https://zenodo.org/badge/latestdoi/191382419) [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/version.svg)](https://anaconda.org/bioconda/msi) [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/msi/README.html)
+
+
 
 
 1. [Overview](#Overview)
