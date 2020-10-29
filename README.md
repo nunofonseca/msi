@@ -21,7 +21,7 @@
 ### Installation
 
 
-#### Conda   [![Anaconda-Server Badge](https://anaconda.org/bioconda/msi/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
+#### Conda  [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/msi/README.html)
 
 MSI is available as a conda package in [Bioconda](https://anaconda.org/bioconda). Simply run the following commands to install MSI
 
