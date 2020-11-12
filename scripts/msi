@@ -829,7 +829,7 @@ function process_fastq {
 	    if [ "${MD[PRIMER_SET]^^}-" == "NONE-" ] ||
 	       [ "${MD[PRIMER_SET]^^}-" == "-" ] ; then
 		pinfo "No primers for $fq_file"
-		sed  -E "s/ /_/g;s/size=(.*)$/\1/;s/$/:adapter=none:/" $CENTROIDS1 > $CENTROIDS.tmp && mv $CENTROIDS.tmp $CENTROIDS
+		sed  -E "s/ /_/g;s/size=(.*)$/\1/;s/^>(.*)$/>\1:adapter=none:/" $CENTROIDS1 > $CENTROIDS.tmp && mv $CENTROIDS.tmp $CENTROIDS
 
 	    else
 		pinfo "Calling cutadapter"
