@@ -22,7 +22,7 @@
 PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 
 ## OS tools
-SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
+SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake EMBOSS"
 
 SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python3-devel"
 
