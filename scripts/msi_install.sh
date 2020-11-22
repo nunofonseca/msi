@@ -60,6 +60,8 @@ CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSIO
 racon_VERSION=1.4.13
 racon_URL="https://github.com/lbcb-sci/racon/releases/download/$racon_VERSION/racon-v${racon_VERSION}.tar.gz"
 
+emboss_VERSION=6.6.0
+
 envir_name=test_msi_env
 ####################################################################
 ##
@@ -259,7 +261,7 @@ if (version\$major > 3 || (version\$major == 3 && version\$minor>5)) {
 message("_____________________________________________________")
 
 message("Installing packages")
-packages2install<-c("Matrix","data.table","devtools","shiny","plotly","DT","r2d3","tidyr","sunburstR","d3heatmap","gplots","rmarkdown","flexdashboard","d3Tree")
+packages2install<-c("Matrix","data.table","devtools","shiny","plotly","DT","r2d3","tidyr","sunburstR","d3heatmap","gplots","rmarkdown","flexdashboard","d3Tree","R.utils")
 
 for (p in packages2install ) {
   message("PACKAGE:",p,"\n")
@@ -406,7 +408,7 @@ set +u
 ## Python
 export PYTHONUSERBASE=\$MSI_DIR/python
 export PYTHONPATH=$MSI_DIR/:$PYTHONPATH
-## lib64/$python_dir/site-packages:\$MSI_DIR/lib/$python_dir/site-packages:\$MSI_DIR/lib64/$python3_dir/site-packages:\$MSI_DIR/lib/$python3_dir/site-packages:$PYTHONPATH
+## lib64/$python_dir/site-packages:\$MSI_DIR/lib64/:$PYTHONPATH
 ## R packages
 export R_LIBS=\$MSI_DIR/Rlibs:\$R_LIBS
 PATH=\$MSI_DIR/python/bin:\$PATH
@@ -440,6 +442,7 @@ if [ "$CONDA_ENVIR-" == "1-" ]; then
     conda install -n $envir_name -c bioconda  -c conda-forge minimap2=$minimap2_VERSION -y
     conda install -n $envir_name -c bioconda  -c conda-forge cd-hit=$cd_hit_VERSION -y
     conda install -n $envir_name -c bioconda  -c conda-forge racon=$racon_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge emboss=$emboss_VERSION -y
     #1.4.13-he513fc3_0
     #conda install -n $envir_name -c bioconda -c conda-forge pilon=1.23 -y
     echo "type
