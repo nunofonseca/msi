@@ -38,7 +38,7 @@ cutadapt_VERSION=2.10
 isONclust_VERSION=0.0.6
 
 
-metabinkit_VERSION=0.2.1
+metabinkit_VERSION=0.2.2
 metabinkit_URL=https://github.com/envmetagen/metabinkit/archive/${metabinkit_VERSION}.tar.gz
 
 fastq_utils_VERSION=0.24.1
