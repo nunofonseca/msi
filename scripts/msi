@@ -344,6 +344,9 @@ if [ "$CONF_FILE-" != "-" ]; then
     pinfo "Loading $CONF_FILE...done."    
 fi
 
+## update some variables
+mbk_db=$TAXONOMY_DATA_DIR
+
 ## Check and validate arguments
 if [ "$TL_DIR-" == "-" ]; then
     perror "no value given to parameter -i"
