@@ -22,7 +22,7 @@
 PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 
 ## OS tools
-SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake EMBOSS"
+SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake embossversion"
 
 SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python3-devel"
 
@@ -324,7 +324,7 @@ function install_all {
 }
 
 function msi_to_docker {
-    MSI_VERSION="0.3.2"
+    MSI_VERSION="0.3.3"
     set -e
     echo "Generating docker image with MSI...this may take a while"
     pushd $PATH2SCRIPT/..
