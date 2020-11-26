@@ -90,15 +90,20 @@ OLD_COLUMN_NUM=$(get_metadata_col_pos $METADATA_COLUMN_OLD)
 NEW_COLUMN_NUM=$(get_metadata_col_pos $METADATA_COLUMN_NEW)
 
 tmp=$(mktemp -p . .msi_rename_XXX)
-zcat $TSV_FILE|  tail -n +2 | sort -k1,1 > $tmp.1
+LC_ALL=C  zcat $TSV_FILE|  tail -n +2 | sort -k1b,1 > $tmp.1
 
 ## header
 set +e
 zcat $TSV_FILE |head -n 1
 set -e
-awk -v  c1="${OLD_COLUMN_NUM}" -v c2="${NEW_COLUMN_NUM}" 'BEGIN {FS="\t"; OFS="\t"} {print $c1,$c2 }' $METADATAFILE | tail -n +2 | sort -k1,1 > $tmp.2
-join -t$'\t' $tmp.2 $tmp.1  | cut -f 2-
+if [ "$EXPERIMENT_ID-"  != "-" ]; then
+    LC_ALL=C  grep -E "(\s|^)$EXPERIMENT_ID(\s|$)" $METADATAFILE| awk -v  c1="${OLD_COLUMN_NUM}" -v c2="${NEW_COLUMN_NUM}" 'BEGIN {FS="\t"; OFS="\t"} {print $c1,$c2 }'  | sort -k1b,1 > $tmp.2
+else
+    LC_ALL=C  awk -v  c1="${OLD_COLUMN_NUM}" -v c2="${NEW_COLUMN_NUM}" 'BEGIN {FS="\t"; OFS="\t"} {print $c1,$c2 }' $METADATAFILE | tail -n +2 | sort -k1b,1 > $tmp.2
+fi
 
+
+LC_ALL=C  join -t$'\t' $tmp.2 $tmp.1  | cut -f 2-
 rm -f $tmp.2 $tmp.1 $tmp
 
 exit 0
