@@ -22,7 +22,7 @@
 PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 
 ## OS tools
-SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake"
+SYSTEM_DEPS="wget gunzip grep git perl /usr/bin/time bash java pip3 python3 Rscript R make cmake EMBOSS"
 
 SYSTEM_PACKS="ncurses-devel libcurl-devel openssl-devel pandoc python3-devel"
 
@@ -38,7 +38,7 @@ cutadapt_VERSION=2.10
 isONclust_VERSION=0.0.6
 
 
-metabinkit_VERSION=0.2.1
+metabinkit_VERSION=0.2.2
 metabinkit_URL=https://github.com/envmetagen/metabinkit/archive/${metabinkit_VERSION}.tar.gz
 
 fastq_utils_VERSION=0.24.1
@@ -59,6 +59,8 @@ CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSIO
 #
 racon_VERSION=1.4.13
 racon_URL="https://github.com/lbcb-sci/racon/releases/download/$racon_VERSION/racon-v${racon_VERSION}.tar.gz"
+
+emboss_VERSION=6.6.0
 
 envir_name=test_msi_env
 ####################################################################
@@ -259,7 +261,7 @@ if (version\$major > 3 || (version\$major == 3 && version\$minor>5)) {
 message("_____________________________________________________")
 
 message("Installing packages")
-packages2install<-c("Matrix","data.table","devtools","shiny","plotly","DT","r2d3","tidyr","sunburstR","d3heatmap","gplots","rmarkdown","flexdashboard","d3Tree")
+packages2install<-c("Matrix","data.table","devtools","shiny","plotly","DT","r2d3","tidyr","sunburstR","d3heatmap","gplots","rmarkdown","flexdashboard","d3Tree","R.utils")
 
 for (p in packages2install ) {
   message("PACKAGE:",p,"\n")
@@ -322,7 +324,7 @@ function install_all {
 }
 
 function msi_to_docker {
-    MSI_VERSION="0.3.1"
+    MSI_VERSION="0.3.2"
     set -e
     echo "Generating docker image with MSI...this may take a while"
     pushd $PATH2SCRIPT/..
@@ -406,7 +408,7 @@ set +u
 ## Python
 export PYTHONUSERBASE=\$MSI_DIR/python
 export PYTHONPATH=$MSI_DIR/:$PYTHONPATH
-## lib64/$python_dir/site-packages:\$MSI_DIR/lib/$python_dir/site-packages:\$MSI_DIR/lib64/$python3_dir/site-packages:\$MSI_DIR/lib/$python3_dir/site-packages:$PYTHONPATH
+## lib64/$python_dir/site-packages:\$MSI_DIR/lib64/:$PYTHONPATH
 ## R packages
 export R_LIBS=\$MSI_DIR/Rlibs:\$R_LIBS
 PATH=\$MSI_DIR/python/bin:\$PATH
@@ -440,6 +442,7 @@ if [ "$CONDA_ENVIR-" == "1-" ]; then
     conda install -n $envir_name -c bioconda  -c conda-forge minimap2=$minimap2_VERSION -y
     conda install -n $envir_name -c bioconda  -c conda-forge cd-hit=$cd_hit_VERSION -y
     conda install -n $envir_name -c bioconda  -c conda-forge racon=$racon_VERSION -y
+    conda install -n $envir_name -c bioconda  -c conda-forge emboss=$emboss_VERSION -y
     #1.4.13-he513fc3_0
     #conda install -n $envir_name -c bioconda -c conda-forge pilon=1.23 -y
     echo "type
