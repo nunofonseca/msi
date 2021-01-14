@@ -897,8 +897,9 @@ function process_fastq {
     if [ "$LAZY-" == "y-" ] && [ -e $CENTROIDS.binres.tsv ] &&   [  $CENTROIDS.binres.tsv -nt $CENTROIDS.bin.tsv ]; then
 	pinfo "$CENTROIDS.binres.tsv  already generated...skipping it"
     else	
-	tail -n +2 $CENTROIDS.bin.tsv|sort -k 1b,1  > $CENTROIDS.bin.tsv.sorted
-	tail -n +2 $CENTROIDS.tsv| sort -k 1b,1  > $CENTROIDS.tsv.sorted
+	tail -n +2 $CENTROIDS.bin.tsv|sort -k 1b,1 -t $'\t'  > $CENTROIDS.bin.tsv.sorted
+        ## -u to remove multiple entries for the same id
+	tail -n +2 $CENTROIDS.tsv| sort -k 1b,1 -t $'\t'  -u > $CENTROIDS.tsv.sorted
 	head -q -n 1 $CENTROIDS.tsv $CENTROIDS.bin.tsv |tr "\n" "\t" | sed "s/qseqid\s//" > $CENTROIDS.binres.tsv.tmp
 	echo >> $CENTROIDS.binres.tsv.tmp
 	join -t $'\t' -1 1 -2 1 -a 1 -e "" $CENTROIDS.tsv.sorted $CENTROIDS.bin.tsv.sorted  >> $CENTROIDS.binres.tsv.tmp
