@@ -47,7 +47,7 @@ A pre-built image with the latest version of MSI can be dowloaded with the follo
 
 ##### Running MSI in a docker container
 
-A companion script to run MSI in a docker container in non-interactive mode is provided here: ([msi_docker](https://github.com/nunofonseca/msi/scripts/msi_docker))
+A companion script to run MSI in a docker container in non-interactive mode is provided here: ([msi_docker](https://github.com/nunofonseca/msi/tree/master/scripts/msi_docker))
 
     scripts/msi_docker params_to_msi1  params_to_msi2 ...
 
