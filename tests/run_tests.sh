@@ -137,10 +137,10 @@ EOF
 
 must_succeed "msi  -c $TMPDIR/msi.params"
 
-must_succeed "msi  -c $TMPDIR/msi2.params"
-
 must_succeed " [ $(zcat  $TMPDIR/t5a/binres.tsv.gz|cut -f 1|tail -n +2|sort -u|wc -l) == 2 ]"
 must_succeed " [ $(zcat  $TMPDIR/t5a/results.tsv.gz|cut -f 1|tail -n +2|sort -u|wc -l) == 2 ]"
+
+must_succeed "msi  -c $TMPDIR/msi2.params -S"
 
 
 must_succeed "msi  -I tests/metadata/metadata2.tsv  -i tests/samples/s4/ -o $TMPDIR/t4 -b $TMPDIR/refdb/db1"
