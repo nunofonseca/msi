@@ -103,7 +103,41 @@ mbk_mt2w=
 mbk_sp_discard_num=
 EOF
 
+cat <<EOF > $TMPDIR/msi2.params
+METADATAFILE=tests/metadata/metadata2.tsv
+blast_refdb=$TMPDIR/refdb/db1
+CLUSTER_MIN_READS=1
+CD_HIT_CLUSTER_THRESHOLD=0.99
+EXPERIMENT_ID=
+PRIMER_MAX_ERROR=0.2
+TAXONOMY_DATA_DIR=$MSI_DIR/db
+TL_DIR=tests/samples/
+IGNORE_UNCLASSIFIED=0
+OUT_FOLDER=$TMPDIR/t5a
+CLUST_MAPPED_THRESHOLD=0.825
+CLUST_ALIGNED_THRESHOLD=0.55
+blast_evalue=0.001
+blast_max_target_seqs=20
+blast_perc_identity=70
+
+mbk_Species=96
+mbk_Genus=92
+mbk_Family=92
+mbk_AboveF=92
+mbk_TopSpecies=100
+mbk_TopGenus=1
+mbk_TopFamily=1
+mbk_TopAF=1
+mbk_rm_predicted=ssciname
+mbk_sp_discard_sp=
+mbk_mt2w=
+mbk_sp_discard_num=
+EOF
+
+
 must_succeed "msi  -c $TMPDIR/msi.params"
+
+must_succeed "msi  -c $TMPDIR/msi2.params"
 
 must_succeed " [ $(zcat  $TMPDIR/t5a/binres.tsv.gz|cut -f 1|tail -n +2|sort -u|wc -l) == 2 ]"
 must_succeed " [ $(zcat  $TMPDIR/t5a/results.tsv.gz|cut -f 1|tail -n +2|sort -u|wc -l) == 2 ]"
