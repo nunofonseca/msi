@@ -19,7 +19,7 @@
 #
 # =========================================================
 
-MSI_VERSION="0.3.5"
+MSI_VERSION="0.3.6"
 PATH2SCRIPT=$(dirname "${BASH_SOURCE[0]}" )
 ## load shell functions
 source $PATH2SCRIPT/msi_shared.sh
@@ -49,7 +49,7 @@ CD_HIT_CLUSTER_THRESHOLD=0.99
 CONF_FILE=
 GEN_FASTQC_REPORT="N"
 SKIP_BLAST="N"
-IGNORE_UNCLASSIFIED=0 ;## process (1) or not (0) the file with unclassified reads (no barcodes)
+IGNORE_UNCLASSIFIED=1 ;## process (1) or not (0) the file with unclassified reads (no barcodes)
 ## minimum number of reads that a cluster must have to  pass the classification step (blastnig)
 CLUSTER_MIN_READS=1
 

@@ -144,6 +144,10 @@ function load_metadata {
 	perror "file $1 not found or not readable"
 	exit 1
     fi
+    if [ "$1-" == "unclassified.fastq.gz-" ]; then
+	# nothing to do
+	return
+    fi    
     MD_FILE=$1
     # experiment_id
     local FILE=$2
@@ -163,7 +167,9 @@ function load_metadata {
 	    set -e
 	    if [ "$x-" == "-" ]; then
 		FILE=$(basename -s .fastq.gz $FILE )
+		set +e
 		x=$(grep -i -E "$EXPERIMENT_ID" $MD_FILE| grep -i -E "(^|\s)$FILE(\s|$)" |cut -f $i)
+		set -e
 	    fi
 	    MD[$C_UP]="$x"
 	    export MDP_$C_UP=$i
