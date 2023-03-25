@@ -1,4 +1,4 @@
-FROM fedora:31
+FROM fedora:36
 LABEL maintainer="nuno.fonseca at gmail.com"
 
 ## wrapper to msi
