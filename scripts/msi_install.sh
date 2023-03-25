@@ -33,15 +33,17 @@ ALL_SOFT="$ALL_TOOLS  blast_db_slow blast_db"
 #ALL_TOOLS="isONclust minimap2 racon cd-hit R_packages msi"
 
 # upgraded 2019-12-04:
-cutadapt_VERSION=2.10
+# upgraded 2023-03-25:2.10
+cutadapt_VERSION=4.3
 # https://pypi.org/project/isONclust/
-isONclust_VERSION=0.0.6
+# upgraded 2023-03-25
+isONclust_VERSION=0.0.6.1
 
 
-metabinkit_VERSION=0.2.2
+metabinkit_VERSION=0.2.3
 metabinkit_URL=https://github.com/envmetagen/metabinkit/archive/${metabinkit_VERSION}.tar.gz
 
-fastq_utils_VERSION=0.24.1
+fastq_utils_VERSION=0.25.2
 fastq_utils_URL=https://github.com/nunofonseca/fastq_utils/archive/$fastq_utils_VERSION.tar.gz
 
 FASTQC_VERSION=0.11.9
@@ -57,9 +59,10 @@ CD_HIT_DATE=2019-0228
 CD_HIT_URL=https://github.com/weizhongli/cdhit/releases/download/V$CD_HIT_VERSION/cd-hit-v${CD_HIT_VERSION}-$CD_HIT_DATE.tar.gz
 
 #
-racon_VERSION=1.4.13
-racon_URL="https://github.com/lbcb-sci/racon/releases/download/$racon_VERSION/racon-v${racon_VERSION}.tar.gz"
-
+# upgraded 2023-03-25: racon_VERSION=1.4.13
+racon_VERSION=1.5.0
+racon_URL="https://github.com/lbcb-sci/racon/archive/refs/tags/${racon_VERSION}.tar.gz"
+#racon_URL="https://github.com/lbcb-sci/racon/releases/download/$racon_VERSION/racon-v${racon_VERSION}.tar.gz"
 emboss_VERSION=6.6.0
 
 envir_name=test_msi_env
@@ -186,7 +189,7 @@ function install_racon {
     rm -f tmp.tar.gz
     wget -c $racon_URL -O tmp.tar.gz
     tar -xzvf tmp.tar.gz
-    cd racon-v${racon_VERSION}
+    cd racon-${racon_VERSION}
     mkdir -p build
     pushd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -235,7 +238,7 @@ version <- getRversion()
 currentVersion <- sprintf("%d.%d", version\$major, version\$minor)
 message("R version:",version)
 usebiocmanager<-TRUE
-if ( version\$major < 3 || (version\$major>=3 && version\$minor<5) ) {
+if ( version\$major < 3 || (version\$major==3 && version\$minor<5) ) {
   cat("ERROR: R version should be 3.5 or above\n")
   q(status=1)
 }
