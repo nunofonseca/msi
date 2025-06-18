@@ -43,7 +43,7 @@ isONclust_VERSION=0.0.6.1
 metabinkit_VERSION=0.2.3
 metabinkit_URL=https://github.com/envmetagen/metabinkit/archive/${metabinkit_VERSION}.tar.gz
 
-fastq_utils_VERSION=0.25.2
+fastq_utils_VERSION=0.25.3
 fastq_utils_URL=https://github.com/nunofonseca/fastq_utils/archive/$fastq_utils_VERSION.tar.gz
 
 FASTQC_VERSION=0.11.9
